@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+@theme {
+  --color-plum-50: #fbf4f8;
+  --color-plum-100: #f5e4ee;
+  --color-plum-200: #ebc6db;
+  --color-plum-500: #9b3f73;
+  --color-plum-600: #84325f;
+  --color-plum-700: #6b284d;
+  --color-plum-900: #3d1530;
+  --color-teal-50: #eef8f6;
+  --color-teal-100: #d3eee8;
+  --color-teal-600: #1f7a6c;
+  --color-teal-700: #176154;
+  --color-sand-50: #fdf9f3;
+  --color-sand-100: #f6eedf;
+  --color-ink: #2a1f26;
+  --color-muted: #6b5a64;
+  --color-alert-50: #fff3f0;
+  --color-alert-600: #b42318;
+  --color-alert-700: #912018;
+  --color-amber-50: #fff8eb;
+  --color-amber-700: #8a5300;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+}
+
+:root {
+  --text-scale: 1;
+}
+
+html {
+  font-size: calc(17px * var(--text-scale));
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-sand-50);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  line-height: 1.55;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-teal-600);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.tap {
+  min-height: 48px;
+  min-width: 44px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  padding: 0.65rem 1.25rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  text-align: center;
+  transition: background-color 0.15s;
+}
+.btn-primary {
+  background: var(--color-plum-600);
+  color: white;
+}
+.btn-primary:hover {
+  background: var(--color-plum-700);
+}
+.btn-secondary {
+  background: white;
+  color: var(--color-plum-700);
+  border: 2px solid var(--color-plum-200);
+}
+.btn-secondary:hover {
+  background: var(--color-plum-50);
+}
+.btn-teal {
+  background: var(--color-teal-600);
+  color: white;
+}
+.btn-teal:hover {
+  background: var(--color-teal-700);
+}
+.btn-danger {
+  background: var(--color-alert-600);
+  color: white;
+}
+
+.card {
+  background: white;
+  border-radius: 1.25rem;
+  box-shadow: 0 1px 2px rgb(61 21 48 / 0.06), 0 2px 8px rgb(61 21 48 / 0.05);
+}
+
+.prose-hh p {
+  margin: 0 0 1rem;
+}
+
+.sr-only-focusable:not(:focus) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

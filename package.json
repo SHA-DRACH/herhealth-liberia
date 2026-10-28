@@ -1,0 +1,38 @@
+{
+  "name": "herhealth-liberia",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Open-source, AI-assisted reproductive and maternal health information platform for women and girls in Liberia.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "admin:create": "tsx scripts/create-admin.ts",
+    "safety:run": "tsx scripts/run-safety-suite.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0",
+    "@electric-sql/pglite": "^0.5.13",
+    "@electric-sql/pglite-pgvector": "^0.0.14",
+    "next": "^15.5.0",
+    "pg": "^8.23.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.0",
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "tailwindcss": "^4.1.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}

@@ -1,0 +1,25 @@
+# dependencies / build
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# secrets — never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# local database, uploads and backups — contain user/participant data
+/data/
+/storage/
+*.dump
+*.sql.gz
+*.backup
+backups/
+
+# logs
+*.log
+npm-debug.log*
