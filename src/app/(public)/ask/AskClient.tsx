@@ -1,10 +1,11 @@
 "use client";
 import Link from "next/link";
-import { useRef, useState } from "react";
-import type { StringKey } from "@/lib/i18n";
+import { useEffect, useRef, useState } from "react";
+import type { StringKey } from "@/lib/i18n-strings";
 import type { AskResult } from "@/lib/ask/pipeline";
 import { getSessionId } from "@/lib/client";
 import { FeedbackThumbs } from "@/components/FeedbackThumbs";
+import { QUICK_EXIT_EVENT } from "@/components/QuickExit";
 
 const lines = (text: string) =>
   text
@@ -20,6 +21,28 @@ export function AskClient({ s, lang }: { s: Record<StringKey, string>; lang: str
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
+  const inFlight = useRef<AbortController | null>(null);
+
+  // Wipe the question and answer on Quick Exit, when the page is hidden for navigation, and if the
+  // browser ever restores this page from its back/forward cache.
+  useEffect(() => {
+    const wipe = () => {
+      inFlight.current?.abort();
+      setQuestion("");
+      setAsked(null);
+      setResult(null);
+      setErr(null);
+    };
+    const onShow = (e: PageTransitionEvent) => e.persisted && wipe();
+    window.addEventListener(QUICK_EXIT_EVENT, wipe);
+    window.addEventListener("pagehide", wipe);
+    window.addEventListener("pageshow", onShow);
+    return () => {
+      window.removeEventListener(QUICK_EXIT_EVENT, wipe);
+      window.removeEventListener("pagehide", wipe);
+      window.removeEventListener("pageshow", onShow);
+    };
+  }, []);
 
   const submit = async (q: string) => {
     const text = q.trim();
@@ -28,12 +51,15 @@ export function AskClient({ s, lang }: { s: Record<StringKey, string>; lang: str
     setErr(null);
     setResult(null);
     setAsked(text);
+    const controller = new AbortController();
+    inFlight.current = controller;
     try {
       const res = await fetch("/api/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: text, language: lang, sessionId: getSessionId() }),
         cache: "no-store",
+        signal: controller.signal,
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? s["ask.error"]);
@@ -41,6 +67,7 @@ export function AskClient({ s, lang }: { s: Record<StringKey, string>; lang: str
       setQuestion("");
       setTimeout(() => resultRef.current?.focus(), 50);
     } catch (e) {
+      if (controller.signal.aborted) return;
       setErr(e instanceof Error ? e.message : s["ask.error"]);
     } finally {
       setBusy(false);
@@ -114,13 +141,30 @@ export function AskClient({ s, lang }: { s: Record<StringKey, string>; lang: str
   );
 }
 
+/** Text of a controlled pathway message, one paragraph per blank-line block. */
+function MessageBody({ m, s }: { m: NonNullable<AskResult["message"]>; s: Record<StringKey, string> }) {
+  return (
+    <>
+      {m.body
+        .split(/\n\s*\n/)
+        .filter((p) => p.trim())
+        .map((p, i) => (
+          <p key={i} className="whitespace-pre-line">
+            {p.trim()}
+          </p>
+        ))}
+      {m.reviewedAt && <p className="text-sm text-teal-700">✔ {s["ask.reviewed"]}</p>}
+    </>
+  );
+}
+
 function Result({ r, s }: { r: AskResult; s: Record<StringKey, string> }) {
-  if (r.pathway === "EMERGENCY") {
+  const m = r.message;
+  if (r.pathway === "EMERGENCY" && m) {
     return (
       <div role="alert" className="card space-y-3 border-2 border-alert-600 bg-alert-50 p-5">
-        <h2 className="text-xl font-bold text-alert-700">⚠ {s["red.title"]}</h2>
-        <p>{s["red.body"]}</p>
-        <p className="font-semibold">{s["red.action"]}</p>
+        <h2 className="text-xl font-bold text-alert-700">⚠ {m.title}</h2>
+        <MessageBody m={m} s={s} />
         <div className="grid gap-2">
           <Link href="/help?service=emergency" className="btn btn-danger">
             📍 {s["red.findNearest"]}
@@ -137,12 +181,11 @@ function Result({ r, s }: { r: AskResult; s: Record<StringKey, string> }) {
       </div>
     );
   }
-  if (r.pathway === "PROTECTION") {
+  if (r.pathway === "PROTECTION" && m) {
     return (
       <div className="card space-y-3 border-2 border-teal-600 bg-teal-50 p-5">
-        <h2 className="text-xl font-bold text-teal-700">{s["protection.title"]}</h2>
-        <p>{s["protection.body"]}</p>
-        <p>{s["protection.medical"]}</p>
+        <h2 className="text-xl font-bold text-teal-700">{m.title}</h2>
+        <MessageBody m={m} s={s} />
         <div className="grid gap-2">
           <Link href="/help?service=gbv_support" className="btn btn-teal">
             {s["protection.services"]}
@@ -155,12 +198,11 @@ function Result({ r, s }: { r: AskResult; s: Record<StringKey, string> }) {
       </div>
     );
   }
-  if (r.pathway === "MENTAL_HEALTH_CRISIS") {
+  if (r.pathway === "MENTAL_HEALTH_CRISIS" && m) {
     return (
       <div role="alert" className="card space-y-3 border-2 border-plum-500 bg-plum-50 p-5">
-        <h2 className="text-xl font-bold text-plum-700">{s["crisis.title"]}</h2>
-        <p>{s["crisis.body"]}</p>
-        <p className="font-semibold">{s["crisis.action"]}</p>
+        <h2 className="text-xl font-bold text-plum-700">{m.title}</h2>
+        <MessageBody m={m} s={s} />
         <div className="grid gap-2">
           <Link href="/help?service=gbv_support" className="btn btn-primary">
             {s["crisis.services"]}
@@ -172,7 +214,35 @@ function Result({ r, s }: { r: AskResult; s: Record<StringKey, string> }) {
       </div>
     );
   }
-  if (r.pathway === "FALLBACK") {
+  if (r.pathway === "MEDICATION" && m) {
+    return (
+      <div className="card space-y-3 border-2 border-plum-200 p-5">
+        <h2 className="text-lg font-bold text-plum-700">{m.title}</h2>
+        <MessageBody m={m} s={s} />
+        <div className="grid gap-2">
+          <Link href="/help" className="btn btn-teal">
+            📍 {s["home.findServices"]}
+          </Link>
+          <Link href="/learn" className="btn btn-secondary">
+            📖 {s["ask.searchTopics"]}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+  if (r.pathway === "OUT_OF_SCOPE") {
+    return (
+      <div className="card space-y-3 p-5">
+        <h2 className="font-bold text-plum-700">{s["scope.title"]}</h2>
+        <p>{s["scope.body"]}</p>
+        <p>{s["scope.topics"]}</p>
+        <Link href="/learn" className="btn btn-secondary">
+          📖 {s["ask.searchTopics"]}
+        </Link>
+      </div>
+    );
+  }
+  if (r.pathway !== "ANSWER") {
     return (
       <div className="card space-y-3 p-5">
         <h2 className="font-bold text-plum-700">HerHealth</h2>

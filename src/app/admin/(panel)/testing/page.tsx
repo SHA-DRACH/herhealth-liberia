@@ -1,8 +1,10 @@
 import { getDb } from "@/lib/db";
 import { requireAdmin } from "@/lib/admin/auth";
 import { usabilitySummary } from "@/lib/admin/stats";
-import { recordUsabilityTestAction } from "../../actions";
-import { btnPrimary, card, input, label, Notice, Stat } from "@/components/admin/ui";
+import { cookies } from "next/headers";
+import { TEST_MODE_COOKIE } from "@/lib/environment";
+import { endParticipantModeAction, recordUsabilityTestAction, startParticipantModeAction } from "../../actions";
+import { btnPrimary, btnSecondary, card, input, label, Notice, Stat } from "@/components/admin/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +21,7 @@ const pct = (v: number | null) => (v === null ? "—" : `${Math.round(v * 100)}%
 export default async function TestingPage({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string }> }) {
   const sp = await searchParams;
   await requireAdmin("testing.manage");
+  const testMode = (await cookies()).get(TEST_MODE_COOKIE)?.value === "1";
   const db = await getDb();
   const s = await usabilitySummary(db);
   const rows = await db.query<{
@@ -47,6 +50,23 @@ export default async function TestingPage({ searchParams }: { searchParams: Prom
         Record each session with informed consent and an anonymous participant code only, never a name. Start with adult participants (18+) unless
         approved safeguarding procedures for minors are in place. Report the real results, including low ones, and what was fixed.
       </p>
+      <section className={`${card} space-y-2`}>
+        <h2 className="font-semibold">Participant device mode</h2>
+        <p className="text-sm text-slate-600">
+          Before handing a phone to a participant, start participant mode on that phone. It signs you out, gives the participant a fresh anonymous ID and
+          records their activity as <strong>testing</strong> (so it counts as evidence while your own activity stays internal). Mode ends automatically
+          after 4 hours, or sign in again on the phone and end it here.
+        </p>
+        {testMode ? (
+          <form action={endParticipantModeAction}>
+            <button className={btnSecondary}>End participant mode on this device</button>
+          </form>
+        ) : (
+          <form action={startParticipantModeAction}>
+            <button className={btnPrimary}>Start participant mode on this device</button>
+          </form>
+        )}
+      </section>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <Stat label="Testers" value={s.testers} hint="target 15–25 adults" />
         <Stat label="Task completion" value={pct(s.task_completion)} hint="target ≥ 80%" />

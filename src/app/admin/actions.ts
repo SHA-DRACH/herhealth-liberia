@@ -1,6 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { TEST_MODE_COOKIE } from "@/lib/environment";
+import { SAFETY_MESSAGE_KEYS, type SafetyMessageKey } from "@/lib/safety/messages";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
 import { audit, login, logout, requireAdmin, ROLES, type Capability, type Role } from "@/lib/admin/auth";
@@ -400,6 +403,67 @@ export async function recordUsabilityTestAction(form: FormData) {
       ],
     );
     return { entity: "usability_test", id: code };
+  });
+}
+
+/**
+ * Puts this device into participant mode for a usability session: activity is recorded as
+ * "testing", the facilitator is signed out, and the participant starts with a fresh anonymous ID.
+ */
+export async function startParticipantModeAction() {
+  const admin = await requireAdmin("testing.manage");
+  await audit(await getDb(), admin.id, "participant_mode_started", "device");
+  await logout();
+  (await cookies()).set(TEST_MODE_COOKIE, "1", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 4 * 3600,
+  });
+  redirect("/welcome?fresh=1");
+}
+
+export async function endParticipantModeAction() {
+  const admin = await requireAdmin("testing.manage");
+  (await cookies()).delete(TEST_MODE_COOKIE);
+  await audit(await getDb(), admin.id, "participant_mode_ended", "device");
+  redirect("/admin/testing?ok=participant%20mode%20ended");
+}
+
+// ---------- safety messages ----------
+
+export async function saveSafetyMessageAction(form: FormData) {
+  const key = str(form, "key") as SafetyMessageKey;
+  await act("safety.edit_messages", `/admin/safety/messages#${key}`, "safety_message_saved", async (adminId) => {
+    if (!SAFETY_MESSAGE_KEYS.includes(key)) throw new Error("Unknown message");
+    const title = str(form, "title");
+    const body = str(form, "body");
+    if (!title || !body) throw new Error("Title and text are required");
+    // Every edit creates a new unreviewed version; the public sees provisional wording until it is approved.
+    await (await getDb()).query(
+      `INSERT INTO safety_messages (key, title, body, updated_by) VALUES ($1,$2,$3,$4)
+       ON CONFLICT (key) DO UPDATE SET title = EXCLUDED.title, body = EXCLUDED.body, updated_by = EXCLUDED.updated_by,
+         status = 'DRAFT', reviewed_by = NULL, reviewed_at = NULL, version = safety_messages.version + 1, updated_at = now()`,
+      [key, title, body, adminId],
+    );
+    return { entity: "safety_message", id: key };
+  });
+}
+
+export async function approveSafetyMessageAction(form: FormData) {
+  const key = str(form, "key");
+  await act("safety.review", `/admin/safety/messages#${key}`, "safety_message_approved", async (adminId) => {
+    const db = await getDb();
+    const [m] = await db.query<{ updated_by: number | null; status: string; version: number }>(
+      `SELECT updated_by, status, version FROM safety_messages WHERE key = $1`,
+      [key],
+    );
+    if (!m) throw new Error("Save the text first");
+    if (m.status === "APPROVED") throw new Error("This version is already approved");
+    if (m.updated_by === adminId) throw new Error("A reviewer cannot approve text they wrote");
+    await db.query(`UPDATE safety_messages SET status = 'APPROVED', reviewed_by = $2, reviewed_at = now() WHERE key = $1`, [key, adminId]);
+    return { entity: "safety_message", id: key, details: { version: m.version } };
   });
 }
 

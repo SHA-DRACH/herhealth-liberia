@@ -31,7 +31,13 @@ const nextConfig: NextConfig = {
   experimental: { serverActions: { bodySizeLimit: "9mb" } },
   serverExternalPackages: ["@electric-sql/pglite", "@electric-sql/pglite-pgvector", "pg"],
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    // Sensitive screens are never stored by the browser, so Back after Quick Exit cannot restore them from cache.
+    const noStore = [{ key: "Cache-Control", value: "no-store, max-age=0" }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      { source: "/ask", headers: noStore },
+      { source: "/menu", headers: noStore },
+    ];
   },
 };
 

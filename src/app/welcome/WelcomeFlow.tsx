@@ -1,12 +1,20 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
-import { setCookie, track, LANG_COOKIE } from "@/lib/client";
+import { useEffect, useState } from "react";
+import { resetDeviceForParticipant, setCookie, track, LANG_COOKIE } from "@/lib/client";
 
 type S = Record<"name" | "tagline" | "by" | "cont" | "privacyTitle" | "privacyIntro" | "p1" | "p2" | "p3" | "readNotice" | "langTitle" | "more", string>;
 
 export function WelcomeFlow({ languages, s }: { languages: { code: string; name: string; native: string | null }[]; s: S }) {
   const [step, setStep] = useState<"splash" | "privacy" | "language">("splash");
+
+  // Participant mode (started from Admin → Testing): begin with a fresh anonymous ID and settings.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("fresh") === "1") {
+      resetDeviceForParticipant();
+      window.history.replaceState(null, "", "/welcome");
+    }
+  }, []);
 
   const choose = (code: string) => {
     setCookie(LANG_COOKIE, code);

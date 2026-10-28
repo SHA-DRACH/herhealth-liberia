@@ -1,10 +1,8 @@
 import { cookies } from "next/headers";
-import en from "../../locales/en/common.json";
 import { getDb } from "./db";
+import { englishStrings as en, type StringKey, type Strings } from "./i18n-strings";
 
-export type Strings = typeof en;
-export type StringKey = keyof Strings;
-export const englishStrings: Strings = en;
+export { englishStrings, type StringKey, type Strings } from "./i18n-strings";
 export const LANG_COOKIE = "hh_lang";
 
 export interface Language {

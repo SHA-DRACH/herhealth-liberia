@@ -1,7 +1,9 @@
 import { getDb } from "@/lib/db";
 import { can, requireAdmin } from "@/lib/admin/auth";
 import { aiQueryBreakdown } from "@/lib/admin/stats";
+import Link from "next/link";
 import { SAFETY_CASES } from "@/lib/safety/test-cases";
+import { SAFETY_MESSAGE_KEYS } from "@/lib/safety/messages";
 import { addSafetyTermAction, reviewSafetyTermAction, runSafetySuiteAction } from "../../actions";
 import { Badge, Bars, btnPrimary, btnSecondary, card, input, label, Notice } from "@/components/admin/ui";
 
@@ -25,6 +27,8 @@ export default async function SafetyPage({ searchParams }: { searchParams: Promi
       )
     : [];
   const q = await aiQueryBreakdown(db);
+  const [{ approved }] = await db.query<{ approved: number }>(`SELECT count(*)::int AS approved FROM safety_messages WHERE status = 'APPROVED'`);
+  const messages = { approved, total: SAFETY_MESSAGE_KEYS.length };
   const pending = terms.filter((t) => t.status === "PENDING_REVIEW").length;
   const reviewer = can(admin.role, "safety.review");
   const questions = new Map(SAFETY_CASES.map((c) => [c.code, c.question]));
@@ -33,6 +37,13 @@ export default async function SafetyPage({ searchParams }: { searchParams: Promi
     <>
       <h1 className="text-2xl font-bold">AI Safety Review</h1>
       <Notice sp={sp} />
+      <p className={`${card} text-sm`}>
+        Emergency page and safety-pathway wording:{" "}
+        <Link className="font-medium text-plum-700 underline" href="/admin/safety/messages">
+          Safety messages
+        </Link>{" "}
+        ({messages.approved}/{messages.total} medically approved)
+      </p>
 
       <section className={`${card} space-y-3`}>
         <div className="flex flex-wrap items-center justify-between gap-2">

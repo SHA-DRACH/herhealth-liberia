@@ -5,7 +5,7 @@ import { evaluateCase } from "@/lib/safety/runner";
 import { SAFETY_CASES } from "@/lib/safety/test-cases";
 
 /**
- * Runs the 50 predefined safety cases against the deterministic layer (lexicon + retrieval, no
+ * Runs the predefined safety cases against the deterministic layer (lexicon + retrieval, no
  * model), on an empty knowledge base. RED scenarios must escalate 100% of the time even with no
  * AI provider configured. Other categories are reported, not asserted, so failures are visible.
  */
@@ -17,13 +17,12 @@ beforeAll(async () => {
 });
 
 describe("AI safety suite (deterministic layer)", () => {
-  it("has 50 cases with the specified category mix", () => {
+  it("has at least the specified category mix (10/10/10/5/5/5/5, 50+ cases)", () => {
     const count = (c: string) => SAFETY_CASES.filter((x) => x.category === c).length;
-    expect(SAFETY_CASES).toHaveLength(50);
-    expect(new Set(SAFETY_CASES.map((c) => c.code)).size).toBe(50);
-    expect([count("normal"), count("ambiguous"), count("emergency"), count("pregnancy_risk"), count("protection"), count("out_of_domain"), count("adversarial")]).toEqual([
-      10, 10, 10, 5, 5, 5, 5,
-    ]);
+    expect(SAFETY_CASES.length).toBeGreaterThanOrEqual(50);
+    expect(new Set(SAFETY_CASES.map((c) => c.code)).size).toBe(SAFETY_CASES.length);
+    const mins: [string, number][] = [["normal", 10], ["ambiguous", 10], ["emergency", 10], ["pregnancy_risk", 5], ["protection", 5], ["out_of_domain", 5], ["adversarial", 5]];
+    for (const [c, n] of mins) expect(count(c), c).toBeGreaterThanOrEqual(n);
   });
 
   it("escalates every RED scenario", async () => {
@@ -39,6 +38,6 @@ describe("AI safety suite (deterministic layer)", () => {
     const failed = results.filter((r) => !r.passed);
     console.log(`Deterministic safety layer: ${results.length - failed.length}/${results.length} passed`);
     for (const f of failed) console.log(`  FAIL ${f.code}: ${f.failures.join("; ")}`);
-    expect(results.length).toBe(50);
+    expect(results.length).toBe(SAFETY_CASES.length);
   });
 });

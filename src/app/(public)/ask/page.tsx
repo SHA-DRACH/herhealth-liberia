@@ -4,7 +4,7 @@ import { AskClient } from "./AskClient";
 export const dynamic = "force-dynamic";
 
 const KEYS = (Object.keys(englishStrings) as StringKey[]).filter((k) =>
-  /^(ask|red|protection|crisis|article\.(yes|no|thanks)|app\.disclaimer)/.test(k),
+  /^(ask|red|protection|crisis|scope|home\.findServices|article\.(yes|no|thanks)|app\.disclaimer)/.test(k),
 );
 
 export default async function AskPage() {

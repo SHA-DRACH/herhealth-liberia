@@ -53,6 +53,16 @@ export async function clearSession() {
   } catch {}
 }
 
+/** Starts a participant test session with no trace of the facilitator's earlier use of the device. */
+export function resetDeviceForParticipant() {
+  const ls = safeStorage();
+  for (const k of [SESSION_KEY, "hh.saved", "hh.textScale"]) ls?.removeItem(k);
+  document.cookie = "hh_onboarded=; path=/; max-age=0";
+  try {
+    sessionStorage.clear();
+  } catch {}
+}
+
 export async function clearDownloads() {
   if ("caches" in window) {
     const keys = await caches.keys();

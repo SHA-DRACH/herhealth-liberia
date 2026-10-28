@@ -373,4 +373,30 @@ export const migrations: Migration[] = [
           .join(","),
     ],
   },
+  {
+    // Separates real participant activity from internal development so evidence is not contaminated.
+    // Rows recorded before this migration were all internal development activity.
+    version: 2,
+    statements: [
+      ...["anonymous_sessions", "analytics_events", "ai_queries", "feedback"].flatMap((t) => [
+        `ALTER TABLE ${t} ADD COLUMN environment TEXT NOT NULL DEFAULT 'development'
+           CHECK (environment IN ('development','testing','pilot','production'))`,
+        `CREATE INDEX ${t}_environment_idx ON ${t} (environment)`,
+      ]),
+      // Controlled safety texts (emergency page and safety pathways). Shown to the public only
+      // once a Health Reviewer who did not write them has approved the current version.
+      `CREATE TABLE safety_messages (
+        key TEXT PRIMARY KEY CHECK (key IN ('emergency_page','red','protection','crisis','medication')),
+        title TEXT NOT NULL,
+        body TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'DRAFT' CHECK (status IN ('DRAFT','APPROVED')),
+        version INTEGER NOT NULL DEFAULT 1,
+        updated_by INTEGER REFERENCES admin_users(id),
+        reviewed_by INTEGER REFERENCES admin_users(id),
+        reviewed_at TIMESTAMPTZ,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        CHECK (status <> 'APPROVED' OR (reviewed_by IS NOT NULL AND reviewed_at IS NOT NULL))
+      )`,
+    ],
+  },
 ];

@@ -32,6 +32,7 @@ const CAPABILITIES = {
   "sources.manage": ["PRODUCT_ADMIN", "HEALTH_REVIEWER"],
   "facilities.manage": ["PRODUCT_ADMIN"],
   "safety.review": ["HEALTH_REVIEWER"],
+  "safety.edit_messages": ["PRODUCT_ADMIN", "HEALTH_REVIEWER"],
   "safety.run": ["SUPER_ADMIN", "PRODUCT_ADMIN", "HEALTH_REVIEWER", "RESEARCH_MEAL"],
   "analytics.view": ["SUPER_ADMIN", "PRODUCT_ADMIN", "HEALTH_REVIEWER", "RESEARCH_MEAL"],
   "feedback.view": ["SUPER_ADMIN", "PRODUCT_ADMIN", "RESEARCH_MEAL"],

@@ -1,5 +1,18 @@
 import type { Db } from "./db";
 import { isUuid } from "./crypto";
+import { ENVIRONMENTS, type Environment } from "./environment";
+
+/** Activity counts per environment, so the admin can see what is internal and what is participant activity. */
+export async function environmentBreakdown(db: Db) {
+  return db.query<{ environment: Environment; devices: number; events: number; questions: number }>(
+    `SELECT e AS environment,
+            (SELECT count(*)::int FROM anonymous_sessions WHERE environment = e) AS devices,
+            (SELECT count(*)::int FROM analytics_events WHERE environment = e) AS events,
+            (SELECT count(*)::int FROM ai_queries WHERE environment = e) AS questions
+       FROM unnest($1::text[]) e`,
+    [[...ENVIRONMENTS]],
+  );
+}
 
 /** Events a browser may send to /api/events. Everything else is recorded server-side only. */
 export const CLIENT_EVENTS = [
@@ -30,29 +43,52 @@ export function sanitizeMetadata(meta: unknown): Record<string, string> | null {
   return Object.keys(out).length ? out : null;
 }
 
-export async function touchSession(db: Db, sessionId: string | null | undefined, language?: string | null) {
+/**
+ * Registers an anonymous device ID. A device keeps the environment it was first seen in, except
+ * that participant test mode always marks it as testing (facilitators may reuse a team device).
+ */
+export async function touchSession(db: Db, sessionId: string | null | undefined, language: string | null | undefined, environment: Environment) {
   if (!isUuid(sessionId)) return;
   await db.query(
-    `INSERT INTO anonymous_sessions (id, language) VALUES ($1, $2)
-     ON CONFLICT (id) DO UPDATE SET last_active = now(), language = COALESCE($2, anonymous_sessions.language)`,
-    [sessionId, language ?? null],
+    `INSERT INTO anonymous_sessions (id, language, environment) VALUES ($1, $2, $3)
+     ON CONFLICT (id) DO UPDATE SET last_active = now(), language = COALESCE($2, anonymous_sessions.language),
+       environment = CASE WHEN $3 = 'testing' THEN 'testing' ELSE anonymous_sessions.environment END`,
+    [sessionId, language ?? null, environment],
   );
 }
 
 export async function recordEvent(
   db: Db,
-  e: { sessionId?: string | null; name: EventName; category?: string | null; language?: string | null; metadata?: Record<string, string> | null },
+  e: {
+    sessionId?: string | null;
+    name: EventName;
+    environment: Environment;
+    category?: string | null;
+    language?: string | null;
+    metadata?: Record<string, string> | null;
+  },
 ) {
   const sid = isUuid(e.sessionId) ? e.sessionId : null;
-  await touchSession(db, sid, e.language);
+  await touchSession(db, sid, e.language, e.environment);
   await db.query(
-    `INSERT INTO analytics_events (anonymous_session_id, event_name, category, language, metadata) VALUES ($1,$2,$3,$4,$5)`,
-    [sid, e.name, e.category ?? null, e.language ?? null, e.metadata ? JSON.stringify(e.metadata) : null],
+    `INSERT INTO analytics_events (anonymous_session_id, event_name, category, language, metadata, environment) VALUES ($1,$2,$3,$4,$5,$6)`,
+    [sid, e.name, e.category ?? null, e.language ?? null, e.metadata ? JSON.stringify(e.metadata) : null, e.environment],
   );
 }
 
+export interface SafetySuiteSummary {
+  passed: number;
+  total: number;
+  red_passed: number;
+  red_total: number;
+  provider: string;
+  run_at: string;
+}
+
 export interface ImpactMetrics {
-  prototype_users: number;
+  /** Environments the figures include. */
+  environments: Environment[];
+  anonymous_prototype_users: number;
   learning_sessions: number;
   articles_viewed: number;
   audio_lessons_played: number;
@@ -65,32 +101,43 @@ export interface ImpactMetrics {
   referral_searches: number;
   feedback_responses: number;
   positive_feedback_rate: number | null;
+  /** Latest stored run of the predefined AI safety suite (not environment-specific). */
+  safety_tests: SafetySuiteSummary | null;
   last_updated: string | null;
 }
 
-/** Aggregates only. No identifiers, no question text, no per-person histories. */
-export async function impactMetrics(db: Db): Promise<ImpactMetrics> {
-  const [r] = await db.query<Record<string, string | number | null>>(`
-    SELECT
-      (SELECT count(*) FROM anonymous_sessions) AS prototype_users,
+/**
+ * Aggregates only. No identifiers, no question text, no per-person histories.
+ * Only activity recorded in the given environments is counted.
+ */
+export async function impactMetrics(db: Db, environments: readonly Environment[] = ENVIRONMENTS): Promise<ImpactMetrics> {
+  const envs = [...environments];
+  const [r] = await db.query<Record<string, string | number | null>>(
+    `SELECT
+      (SELECT count(*) FROM anonymous_sessions WHERE environment = ANY($1)) AS anonymous_prototype_users,
       (SELECT count(DISTINCT (anonymous_session_id, date_trunc('day', created_at)))
-         FROM analytics_events WHERE event_name IN ('article_viewed','audio_started') AND anonymous_session_id IS NOT NULL) AS learning_sessions,
-      (SELECT count(*) FROM analytics_events WHERE event_name = 'article_viewed') AS articles_viewed,
-      (SELECT count(*) FROM analytics_events WHERE event_name = 'audio_started') AS audio_lessons_played,
-      (SELECT count(*) FROM ai_queries) AS questions_submitted,
-      (SELECT count(*) FROM ai_queries WHERE response_status = 'ANSWER') AS questions_answered,
-      (SELECT count(*) FROM ai_queries WHERE response_status IN ('ANSWER','EMERGENCY','PROTECTION','MENTAL_HEALTH_CRISIS')) AS questions_supported,
-      (SELECT count(*) FROM ai_queries WHERE response_status IN ('EMERGENCY','PROTECTION','MENTAL_HEALTH_CRISIS')) AS safety_escalations,
-      (SELECT count(DISTINCT language) FROM analytics_events WHERE language IS NOT NULL) AS languages_used,
+         FROM analytics_events WHERE event_name IN ('article_viewed','audio_started') AND anonymous_session_id IS NOT NULL AND environment = ANY($1)) AS learning_sessions,
+      (SELECT count(*) FROM analytics_events WHERE event_name = 'article_viewed' AND environment = ANY($1)) AS articles_viewed,
+      (SELECT count(*) FROM analytics_events WHERE event_name = 'audio_started' AND environment = ANY($1)) AS audio_lessons_played,
+      (SELECT count(*) FROM ai_queries WHERE environment = ANY($1)) AS questions_submitted,
+      (SELECT count(*) FROM ai_queries WHERE response_status = 'ANSWER' AND environment = ANY($1)) AS questions_answered,
+      (SELECT count(*) FROM ai_queries WHERE response_status IN ('ANSWER','EMERGENCY','PROTECTION','MENTAL_HEALTH_CRISIS','MEDICATION','OUT_OF_SCOPE') AND environment = ANY($1)) AS questions_supported,
+      (SELECT count(*) FROM ai_queries WHERE response_status IN ('EMERGENCY','PROTECTION','MENTAL_HEALTH_CRISIS') AND environment = ANY($1)) AS safety_escalations,
+      (SELECT count(DISTINCT language) FROM analytics_events WHERE language IS NOT NULL AND environment = ANY($1)) AS languages_used,
       (SELECT count(*) FROM languages WHERE status = 'ACTIVE') AS languages_available,
-      (SELECT count(*) FROM analytics_events WHERE event_name = 'facility_search') AS referral_searches,
-      (SELECT count(*) FROM feedback WHERE rating IS NOT NULL) AS feedback_responses,
-      (SELECT avg(CASE WHEN rating = 1 THEN 1.0 ELSE 0.0 END) FROM feedback WHERE rating IS NOT NULL) AS positive_feedback_rate,
-      (SELECT max(created_at) FROM analytics_events) AS last_updated
-  `);
+      (SELECT count(*) FROM analytics_events WHERE event_name = 'facility_search' AND environment = ANY($1)) AS referral_searches,
+      (SELECT count(*) FROM feedback WHERE rating IS NOT NULL AND environment = ANY($1)) AS feedback_responses,
+      (SELECT avg(CASE WHEN rating = 1 THEN 1.0 ELSE 0.0 END) FROM feedback WHERE rating IS NOT NULL AND environment = ANY($1)) AS positive_feedback_rate,
+      (SELECT max(created_at) FROM analytics_events WHERE environment = ANY($1)) AS last_updated`,
+    [envs],
+  );
+  const [run] = await db.query<SafetySuiteSummary>(
+    `SELECT passed, total, red_passed, red_total, provider, created_at AS run_at FROM safety_test_runs ORDER BY created_at DESC LIMIT 1`,
+  );
   const n = (k: string) => Number(r[k] ?? 0);
   return {
-    prototype_users: n("prototype_users"),
+    environments: envs,
+    anonymous_prototype_users: n("anonymous_prototype_users"),
     learning_sessions: n("learning_sessions"),
     articles_viewed: n("articles_viewed"),
     audio_lessons_played: n("audio_lessons_played"),
@@ -103,6 +150,7 @@ export async function impactMetrics(db: Db): Promise<ImpactMetrics> {
     referral_searches: n("referral_searches"),
     feedback_responses: n("feedback_responses"),
     positive_feedback_rate: r.positive_feedback_rate === null ? null : Math.round(Number(r.positive_feedback_rate) * 100) / 100,
+    safety_tests: run ? { ...run, run_at: new Date(run.run_at).toISOString() } : null,
     last_updated: r.last_updated ? new Date(r.last_updated as string).toISOString() : null,
   };
 }

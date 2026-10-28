@@ -54,7 +54,7 @@ beforeAll(async () => {
 describe("content workflow and retrieval gating", () => {
   it("never retrieves a draft", async () => {
     articleId = await wf.createArticle(db, author, fixture);
-    const r = await ask(db, noAI, { question: "zebra quokka topic", language: "en", record: false });
+    const r = await ask(db, noAI, { question: "zebra quokka health topic", language: "en", record: false });
     expect(r.pathway).toBe("FALLBACK");
   });
 
@@ -74,7 +74,7 @@ describe("content workflow and retrieval gating", () => {
   it("cannot publish before approval, and approved-but-unpublished is not retrievable", async () => {
     await expect(wf.publishArticle(db, articleId)).rejects.toThrow();
     await wf.medicalReview(db, reviewer, articleId, "APPROVED", "");
-    const r = await ask(db, noAI, { question: "zebra quokka topic", language: "en", record: false });
+    const r = await ask(db, noAI, { question: "zebra quokka health topic", language: "en", record: false });
     expect(r.pathway).toBe("FALLBACK");
   });
 
@@ -92,7 +92,7 @@ describe("content workflow and retrieval gating", () => {
     await wf.updateArticle(db, author, articleId, { ...fixture, content: fixture.content + "\n\nEdited." });
     const [a] = await db.query<{ status: string; version: number }>(`SELECT status, version FROM articles WHERE id = $1`, [articleId]);
     expect(a).toEqual({ status: "DRAFT", version: 2 });
-    const r = await ask(db, noAI, { question: "zebra quokka topic", language: "en", record: false });
+    const r = await ask(db, noAI, { question: "zebra quokka health topic", language: "en", record: false });
     expect(r.pathway).toBe("FALLBACK");
     await wf.submitForMedicalReview(db, articleId);
     await wf.medicalReview(db, reviewer, articleId, "APPROVED", "");
@@ -152,14 +152,28 @@ describe("safety pathways", () => {
 
 describe("analytics", () => {
   it("records real events only, without question text, and aggregates them", async () => {
-    const before = await impactMetrics(db);
-    await recordEvent(db, { sessionId: session, name: "article_viewed", language: "en", category: "menstrual-health" });
-    await ask(db, noAI, { question: "What is the zebra quokka topic? my email is x@y.com", language: "en", sessionId: session });
-    const after = await impactMetrics(db);
+    const before = await impactMetrics(db, ["testing"]);
+    await recordEvent(db, { sessionId: session, name: "article_viewed", environment: "testing", language: "en", category: "menstrual-health" });
+    await ask(db, noAI, { question: "What is the zebra quokka topic? my email is x@y.com", language: "en", sessionId: session, environment: "testing" });
+    const after = await impactMetrics(db, ["testing"]);
     expect(after.articles_viewed).toBe(before.articles_viewed + 1);
     expect(after.questions_answered).toBe(before.questions_answered + 1);
-    expect(after.prototype_users).toBe(before.prototype_users + 1);
+    expect(after.anonymous_prototype_users).toBe(before.anonymous_prototype_users + 1);
     const rows = await db.query<Record<string, unknown>>(`SELECT * FROM ai_queries`);
     expect(JSON.stringify(rows)).not.toMatch(/zebra|quokka|x@y/);
+  });
+
+  it("keeps internal development activity out of the evidence figures", async () => {
+    const dev = "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d";
+    const before = await impactMetrics(db, ["testing", "pilot", "production"]);
+    await recordEvent(db, { sessionId: dev, name: "article_viewed", environment: "development", language: "en" });
+    await ask(db, noAI, { question: "What is the zebra quokka topic?", language: "en", sessionId: dev, environment: "development" });
+    const after = await impactMetrics(db, ["testing", "pilot", "production"]);
+    expect(after).toMatchObject({
+      anonymous_prototype_users: before.anonymous_prototype_users,
+      articles_viewed: before.articles_viewed,
+      questions_submitted: before.questions_submitted,
+    });
+    expect((await impactMetrics(db, ["development"])).questions_submitted).toBeGreaterThan(0);
   });
 });

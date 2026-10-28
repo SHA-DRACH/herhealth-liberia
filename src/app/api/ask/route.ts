@@ -4,6 +4,7 @@ import { ask, MAX_QUESTION_LENGTH } from "@/lib/ask/pipeline";
 import { activeLanguages } from "@/lib/i18n";
 import { error, json, rateLimited, readJson } from "@/lib/http";
 import { isUuid } from "@/lib/crypto";
+import { requestEnvironment } from "@/lib/environment";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export async function POST(req: Request) {
   const sessionId = isUuid(body?.sessionId) ? body!.sessionId : null;
   try {
     const db = await getDb();
-    const result = await ask(db, await getAIProvider(), { question, language, sessionId });
+    const result = await ask(db, await getAIProvider(), { question, language, sessionId, environment: await requestEnvironment() });
     return json(result);
   } catch (e) {
     console.error("ask pipeline failed", e instanceof Error ? e.message : "");

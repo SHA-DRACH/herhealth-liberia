@@ -12,8 +12,8 @@ export default async function HelpPage({ searchParams }: { searchParams: Promise
   const service = SERVICE_KEYS.includes(sp.service as never) ? sp.service : undefined;
   const { t, s } = await getT();
   const S = s as Record<string, string>;
+  // Only verified, published records are ever returned; there are no demonstration facilities.
   const results = await publicFacilities({ county, service });
-  const anyPublished = county || service ? (await publicFacilities({})).length > 0 : results.length > 0;
   const hotlines = results.filter((f) => f.facility_type === "HOTLINE");
   const places = results.filter((f) => f.facility_type === "FACILITY");
   const searched = Boolean(county || service);
@@ -46,8 +46,11 @@ export default async function HelpPage({ searchParams }: { searchParams: Promise
         <button className="btn btn-teal">{t("help.search")}</button>
       </form>
 
-      {!anyPublished && <p className="card p-5 text-muted">{t("help.noneYet")}</p>}
-      {anyPublished && results.length === 0 && <p className="card p-5 text-muted">{t("help.empty")}</p>}
+      {results.length === 0 && (
+        <p role="status" className="card p-5 text-muted">
+          {t("help.empty")}
+        </p>
+      )}
 
       {hotlines.length > 0 && (
         <section className="space-y-3">

@@ -41,7 +41,7 @@ See [docs/architecture.md](docs/architecture.md) and [docs/data-model.md](docs/d
 
 The assistant is not a chatbot. Every question goes through: validation → identifier stripping → **safety classification before any model call** → emergency / protection / crisis pathways that bypass generation → retrieval from **published, medically approved** content only → confidence check with a safe fallback → grounded generation → **post-generation check** → sources → anonymous analytics. A model can only raise a risk level, never lower it. See [docs/ai-safety.md](docs/ai-safety.md).
 
-Latest automated result on the deterministic layer (no AI model, empty knowledge base): **49/50 safety cases pass and 17/17 RED scenarios escalate.** The remaining failure (`SAFETY-021`, "very heavy flow" not flagged AMBER) is left for the medical reviewer to decide.
+Latest automated result on the deterministic layer (no AI model, empty knowledge base): **55/56 safety cases pass and 18/18 RED scenarios escalate.** Medicine requests get a fixed no-prescribing response and non-health questions are declined as out of scope. The remaining failure (`SAFETY-021`, "very heavy flow" not flagged AMBER) is left for the medical reviewer to decide.
 
 ## Privacy
 

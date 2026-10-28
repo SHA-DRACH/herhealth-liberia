@@ -6,17 +6,29 @@ import { postGenerationCheck } from "../safety/postcheck";
 import { retrieve, type RetrievedChunk } from "../content/knowledge";
 import { keyedHash } from "../crypto";
 import { recordEvent } from "../analytics";
+import type { Environment } from "../environment";
+import { isMedicationRequest, isOutOfScope } from "../safety/scope";
+import { safetyMessage, type SafetyMessage, type SafetyMessageKey } from "../safety/messages";
 
 export const MIN_COVERAGE = 0.5;
 export const MAX_QUESTION_LENGTH = 500;
 
-export type Pathway = "ANSWER" | "FALLBACK" | "EMERGENCY" | "PROTECTION" | "MENTAL_HEALTH_CRISIS";
+export type Pathway = "ANSWER" | "FALLBACK" | "OUT_OF_SCOPE" | "MEDICATION" | "EMERGENCY" | "PROTECTION" | "MENTAL_HEALTH_CRISIS";
+
+const PATHWAY_MESSAGE: Partial<Record<Pathway, SafetyMessageKey>> = {
+  EMERGENCY: "red",
+  PROTECTION: "protection",
+  MENTAL_HEALTH_CRISIS: "crisis",
+  MEDICATION: "medication",
+};
 
 export interface AskResult {
   pathway: Pathway;
   risk: RiskLevel;
   /** Other pathways that also apply, e.g. PROTECTION alongside EMERGENCY. */
   alsoApplies: Pathway[];
+  /** Controlled text for safety and medicine pathways (reviewedAt is set once medically approved). */
+  message?: SafetyMessage;
   answer?: string;
   answerMode?: "generated" | "approved_text";
   warningSigns?: string;
@@ -78,6 +90,8 @@ export interface AskInput {
   question: string;
   language: string;
   sessionId?: string | null;
+  /** Analytics environment of the request (see src/lib/environment.ts). */
+  environment?: Environment;
   /** false for automated safety-test runs, so test traffic never appears in usage analytics. */
   record?: boolean;
 }
@@ -96,24 +110,30 @@ export async function ask(db: Db, ai: AIProvider, input: AskInput): Promise<AskR
   const c = await classify(db, ai, question);
   const special = c.levels.map(levelToPathway).filter((p): p is Pathway => p !== null);
 
-  const log = async (status: string, intent: string | null, score: number | null) => {
+  const environment = input.environment ?? "development";
+  const log = async (status: Pathway, intent: string | null, score: number | null) => {
     if (input.record === false) return;
     await db.query(
-      `INSERT INTO ai_queries (session_id, language, intent, risk_level, question_hash, response_status, retrieval_score, provider)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-      [input.sessionId ?? null, language, intent, c.level, questionHash, status, score, ai.name],
+      `INSERT INTO ai_queries (session_id, language, intent, risk_level, question_hash, response_status, retrieval_score, provider, environment)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+      [input.sessionId ?? null, language, intent, c.level, questionHash, status, score, ai.name, environment],
     );
-    await recordEvent(db, { sessionId: input.sessionId, name: "question_submitted", language, category: intent });
-    if (special.length) await recordEvent(db, { sessionId: input.sessionId, name: "safety_escalation", language, metadata: { risk_level: c.level } });
-    else if (status === "ANSWER") await recordEvent(db, { sessionId: input.sessionId, name: "answer_generated", language, category: intent });
+    const ev = { sessionId: input.sessionId, language, environment };
+    await recordEvent(db, { ...ev, name: "question_submitted", category: intent });
+    if (special.length) await recordEvent(db, { ...ev, name: "safety_escalation", metadata: { risk_level: c.level } });
+    else if (status === "ANSWER") await recordEvent(db, { ...ev, name: "answer_generated", category: intent });
+  };
+  const controlled = async (pathway: Pathway, alsoApplies: Pathway[], intent: string | null): Promise<AskResult> => {
+    await log(pathway, intent, null);
+    const key = PATHWAY_MESSAGE[pathway];
+    return { pathway, risk: c.level, alsoApplies, ...(key ? { message: await safetyMessage(db, key) } : {}) };
   };
 
   // 5–6. Emergency, mental-health crisis and protection bypass normal generation entirely.
-  if (special.length) {
-    const pathway = special[0];
-    await log(pathway, null, null);
-    return { pathway, risk: c.level, alsoApplies: special.slice(1) };
-  }
+  if (special.length) return controlled(special[0], special.slice(1), null);
+
+  // Requests to choose or dose a medicine are outside HerHealth's scope: never generated, never retrieved.
+  if (isMedicationRequest(question)) return controlled("MEDICATION", [], "medication_request");
 
   // 7–10. Retrieve approved knowledge and check confidence.
   let answerLanguage = language;
@@ -128,7 +148,8 @@ export async function ask(db: Db, ai: AIProvider, input: AskInput): Promise<AskR
   const top = chunks[0];
   const score = top?.coverage ?? 0;
   if (!top || score < MIN_COVERAGE) {
-    await log("FALLBACK", top?.category ?? "out_of_domain", score);
+    if (isOutOfScope(question)) return controlled("OUT_OF_SCOPE", [], "out_of_scope");
+    await log("FALLBACK", top?.category ?? "no_approved_content", score);
     return { pathway: "FALLBACK", risk: c.level, alsoApplies: [] };
   }
   const intent = top.category;
