@@ -27,6 +27,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Lets a verification build run (NEXT_DIST_DIR=.next-verify) without overwriting the running dev server's .next folder.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   // Audio uploads (max 8 MB) go through admin server actions.
   experimental: { serverActions: { bodySizeLimit: "9mb" } },
   serverExternalPackages: ["@electric-sql/pglite", "@electric-sql/pglite-pgvector", "pg"],
