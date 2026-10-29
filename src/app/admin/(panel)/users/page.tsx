@@ -6,7 +6,7 @@ import { Badge, btnPrimary, btnSecondary, card, input, label, Notice } from "@/c
 export const dynamic = "force-dynamic";
 
 const ROLE_HELP: Record<string, string> = {
-  SUPER_ADMIN: "Technical and configuration access. Cannot approve health content or translations.",
+  SUPER_ADMIN: "Manages all site content, facilities, settings and team accounts. Cannot give medical or translation approval.",
   PRODUCT_ADMIN: "Writes and publishes content, manages facilities, sources and analytics.",
   HEALTH_REVIEWER: "Medically reviews and approves health information and the safety lexicon.",
   TRANSLATOR: "Translates assigned, medically approved content.",

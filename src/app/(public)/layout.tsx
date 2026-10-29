@@ -5,6 +5,7 @@ import { TEST_MODE_COOKIE } from "@/lib/environment";
 import { BottomNav } from "@/components/BottomNav";
 import { QuickExit } from "@/components/QuickExit";
 import { OfflineBanner } from "@/components/OfflineBanner";
+import { Animations } from "@/components/Animations";
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const { t } = await getT();
@@ -28,6 +29,7 @@ export default async function PublicLayout({ children }: { children: React.React
       <OfflineBanner text={t("common.offline")} />
       <main id="main" className="flex-1 px-4 pb-28 pt-2">{children}</main>
       <BottomNav labels={{ home: t("nav.home"), learn: t("nav.learn"), ask: t("nav.ask"), help: t("nav.help") }} />
+      <Animations selector="#main h1, #main .card, #main .btn" />
     </div>
   );
 }

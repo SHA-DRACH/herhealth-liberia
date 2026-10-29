@@ -108,6 +108,60 @@ body {
   clip: rect(0 0 0 0);
 }
 
+/* Admin tables become labelled cards on phones (labels set by ResponsiveTables). */
+@media (max-width: 767px) {
+  table.stack-on-mobile thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  table.stack-on-mobile,
+  table.stack-on-mobile tbody,
+  table.stack-on-mobile tr,
+  table.stack-on-mobile td,
+  table.stack-on-mobile th {
+    display: block;
+    width: 100%;
+  }
+  table.stack-on-mobile tr {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  table.stack-on-mobile tr:last-child {
+    border-bottom: 0;
+  }
+  table.stack-on-mobile td,
+  table.stack-on-mobile tbody th {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.35rem 0 !important;
+    border: 0 !important;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+  table.stack-on-mobile td[data-label]::before {
+    content: attr(data-label);
+    flex: none;
+    max-width: 45%;
+    font-weight: 600;
+    color: #64748b;
+    text-align: left;
+  }
+  table.stack-on-mobile td:not([data-label]),
+  table.stack-on-mobile td[data-label=""] {
+    justify-content: flex-start;
+    text-align: left;
+  }
+  .admin-main form,
+  .admin-main section {
+    min-width: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
