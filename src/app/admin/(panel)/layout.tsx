@@ -42,9 +42,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             ))}
           </ul>
         </nav>
-        <form action={logoutAction} className="p-4">
-          <button className="text-sm text-slate-500 underline">Sign out</button>
-        </form>
+        <div className="flex gap-4 p-4 text-sm">
+          <Link href="/admin/password" className="text-slate-500 underline">
+            Change password
+          </Link>
+          <form action={logoutAction}>
+            <button className="text-slate-500 underline">Sign out</button>
+          </form>
+        </div>
       </aside>
       <main className="min-w-0 space-y-5 p-4 md:p-8">{children}</main>
     </div>

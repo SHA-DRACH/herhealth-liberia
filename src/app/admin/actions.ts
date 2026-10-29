@@ -6,7 +6,7 @@ import { TEST_MODE_COOKIE } from "@/lib/environment";
 import { SAFETY_MESSAGE_KEYS, type SafetyMessageKey } from "@/lib/safety/messages";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
-import { audit, login, logout, requireAdmin, ROLES, safeAdminPath, type Capability, type Role } from "@/lib/admin/auth";
+import { audit, changePassword, currentAdmin, login, logout, requireAdmin, ROLES, safeAdminPath, type Capability, type Role } from "@/lib/admin/auth";
 import { hashPassword } from "@/lib/crypto";
 import * as wf from "@/lib/content/workflow";
 import { reindexArticle } from "@/lib/content/knowledge";
@@ -60,6 +60,23 @@ export async function loginAction(_prev: LoginState, form: FormData): Promise<Lo
           : "The email or password is incorrect, or the account is disabled.",
     };
   redirect(safeAdminPath(str(form, "next")));
+}
+
+export interface PasswordState {
+  error: string | null;
+}
+
+export async function changePasswordAction(_prev: PasswordState, form: FormData): Promise<PasswordState> {
+  const admin = await currentAdmin();
+  if (!admin) redirect("/admin/login");
+  const r = await changePassword(
+    admin.id,
+    String(form.get("current") ?? ""),
+    String(form.get("password") ?? ""),
+    String(form.get("confirm") ?? ""),
+  );
+  if (!r.ok) return { error: r.error };
+  redirect("/admin?ok=password%20changed");
 }
 
 export async function logoutAction() {
@@ -494,7 +511,7 @@ export async function createUserAction(form: FormData) {
     const email = str(form, "email").toLowerCase();
     if (!/^\S+@\S+\.\S+$/.test(email)) throw new Error("Enter a valid email");
     const [r] = await (await getDb()).query<{ id: number }>(
-      `INSERT INTO admin_users (name, email, password_hash, role) VALUES ($1,$2,$3,$4) RETURNING id`,
+      `INSERT INTO admin_users (name, email, password_hash, role, must_change_password) VALUES ($1,$2,$3,$4,true) RETURNING id`,
       [str(form, "name"), email, hashPassword(password), role],
     );
     return { entity: "admin_user", id: r.id, details: { role } };

@@ -85,7 +85,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
           </select>
         </label>
         <label className={label}>
-          Initial password (min. 12 characters; share it privately)
+          Temporary password (min. 12 characters; share it privately — they must change it at first sign-in)
           <input name="password" type="password" required minLength={12} autoComplete="new-password" className={input} />
         </label>
         <ul className="list-disc pl-5 text-xs text-slate-600 md:col-span-2">

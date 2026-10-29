@@ -86,10 +86,19 @@ export function getDb(): Promise<Db> {
   if (!g.__herhealthDb) {
     const url = process.env.DATABASE_URL || undefined;
     const dataDir = process.env.PGLITE_DATA_DIR || path.join(process.cwd(), "data", "pglite");
-    g.__herhealthDb = openDb({ url, dataDir }).catch((e) => {
-      g.__herhealthDb = undefined;
-      throw e;
-    });
+    g.__herhealthDb = openDb({ url, dataDir })
+      .then(async (db) => {
+        // First run: create the default admin (skipped by `npm run admin:create`, which makes its own account).
+        if (process.env.HERHEALTH_SKIP_DEFAULT_ADMIN !== "1") {
+          const { ensureDefaultAdmin } = await import("../admin/bootstrap");
+          await ensureDefaultAdmin(db);
+        }
+        return db;
+      })
+      .catch((e) => {
+        g.__herhealthDb = undefined;
+        throw e;
+      });
   }
   return g.__herhealthDb;
 }

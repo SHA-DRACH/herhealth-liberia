@@ -5,6 +5,7 @@ import { error } from "../http";
 export async function apiAdmin(cap?: Capability): Promise<AdminUser | Response> {
   const admin = await currentAdmin();
   if (!admin) return error(401, "authentication required");
+  if (admin.mustChangePassword) return error(403, "password change required");
   if (cap && !can(admin.role, cap)) return error(403, "forbidden");
   return admin;
 }

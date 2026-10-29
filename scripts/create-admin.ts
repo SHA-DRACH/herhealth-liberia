@@ -47,6 +47,7 @@ async function main() {
     console.error("Password must be at least 12 characters.");
     process.exit(1);
   }
+  process.env.HERHEALTH_SKIP_DEFAULT_ADMIN = "1";
   const db = await getDb();
   await db.query(`INSERT INTO admin_users (name, email, password_hash, role) VALUES ($1,$2,$3,$4)`, [name, email, hashPassword(password), role]);
   await db.query(`INSERT INTO audit_log (action, entity, entity_id, details) VALUES ('admin_user_created_cli', 'admin_user', $1, $2)`, [

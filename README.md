@@ -58,11 +58,10 @@ Requires Node.js 20+.
 ```bash
 npm install
 cp .env.example .env        # optional for local development
-npm run admin:create -- --name "Your Name" --email you@example.org --role SUPER_ADMIN
-npm run dev                 # http://localhost:3000, admin at /admin
+npm run dev                 # http://localhost:3000, admin at /admin/login
 ```
 
-With the embedded database, run `admin:create` while the dev server is stopped. For production see [docs/deployment.md](docs/deployment.md).
+**First admin sign-in:** on first start with no admin accounts, the app creates `admin@herhealth.local` and prints a one-time password once in the server terminal (or uses `ADMIN_DEFAULT_PASSWORD` from `.env`). You must choose a new password at first sign-in. No password is stored in the repository. More team accounts can be added in Admin → Users & Roles, or with `npm run admin:create` (with the embedded database, while the dev server is stopped). For production see [docs/deployment.md](docs/deployment.md).
 
 ## API
 

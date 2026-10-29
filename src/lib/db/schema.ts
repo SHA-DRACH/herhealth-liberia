@@ -399,4 +399,9 @@ export const migrations: Migration[] = [
       )`,
     ],
   },
+  {
+    // Accounts created with a default or temporary password must choose their own at first sign-in.
+    version: 3,
+    statements: [`ALTER TABLE admin_users ADD COLUMN must_change_password BOOLEAN NOT NULL DEFAULT false`],
+  },
 ];

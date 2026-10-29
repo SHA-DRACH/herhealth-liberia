@@ -1,7 +1,7 @@
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getDb, type Db } from "../db";
-import { keyedHash, randomToken, verifyPassword } from "../crypto";
+import { hashPassword, keyedHash, randomToken, verifyPassword } from "../crypto";
 
 export const ADMIN_COOKIE = "hh_admin";
 const SESSION_HOURS = 8;
@@ -19,24 +19,25 @@ export const ROLE_LABELS: Record<Role, string> = {
 };
 
 /**
- * Least-privilege capability map. Medical approval belongs only to Health Reviewers and
- * translation approval only to Language Reviewers — not even a Super Admin can do either.
+ * Capability map. The Super Admin can manage all site content and settings. Medical approval
+ * belongs only to Health Reviewers and translation approval only to Language Reviewers — not even
+ * a Super Admin can do either, so "medically reviewed" always means an independent reviewer approved it.
  */
 const CAPABILITIES = {
-  "content.edit": ["PRODUCT_ADMIN"],
-  "content.publish": ["PRODUCT_ADMIN"],
+  "content.edit": ["SUPER_ADMIN", "PRODUCT_ADMIN"],
+  "content.publish": ["SUPER_ADMIN", "PRODUCT_ADMIN"],
   "content.medical_review": ["HEALTH_REVIEWER"],
-  "translation.edit": ["TRANSLATOR", "PRODUCT_ADMIN"],
+  "translation.edit": ["SUPER_ADMIN", "TRANSLATOR", "PRODUCT_ADMIN"],
   "translation.review": ["LANGUAGE_REVIEWER"],
-  "audio.manage": ["PRODUCT_ADMIN", "TRANSLATOR"],
-  "sources.manage": ["PRODUCT_ADMIN", "HEALTH_REVIEWER"],
-  "facilities.manage": ["PRODUCT_ADMIN"],
+  "audio.manage": ["SUPER_ADMIN", "PRODUCT_ADMIN", "TRANSLATOR"],
+  "sources.manage": ["SUPER_ADMIN", "PRODUCT_ADMIN", "HEALTH_REVIEWER"],
+  "facilities.manage": ["SUPER_ADMIN", "PRODUCT_ADMIN"],
   "safety.review": ["HEALTH_REVIEWER"],
-  "safety.edit_messages": ["PRODUCT_ADMIN", "HEALTH_REVIEWER"],
+  "safety.edit_messages": ["SUPER_ADMIN", "PRODUCT_ADMIN", "HEALTH_REVIEWER"],
   "safety.run": ["SUPER_ADMIN", "PRODUCT_ADMIN", "HEALTH_REVIEWER", "RESEARCH_MEAL"],
   "analytics.view": ["SUPER_ADMIN", "PRODUCT_ADMIN", "HEALTH_REVIEWER", "RESEARCH_MEAL"],
   "feedback.view": ["SUPER_ADMIN", "PRODUCT_ADMIN", "RESEARCH_MEAL"],
-  "testing.manage": ["PRODUCT_ADMIN", "RESEARCH_MEAL"],
+  "testing.manage": ["SUPER_ADMIN", "PRODUCT_ADMIN", "RESEARCH_MEAL"],
   "users.manage": ["SUPER_ADMIN"],
   "settings.manage": ["SUPER_ADMIN", "PRODUCT_ADMIN"],
   "audit.view": ["SUPER_ADMIN"],
@@ -119,25 +120,47 @@ export async function logout() {
   jar.delete(ADMIN_COOKIE);
 }
 
-export async function currentAdmin(): Promise<AdminUser | null> {
+export async function currentAdmin(): Promise<(AdminUser & { mustChangePassword: boolean }) | null> {
   const token = (await cookies()).get(ADMIN_COOKIE)?.value;
   if (!token) return null;
   const db = await getDb();
-  const [u] = await db.query<AdminUser>(
-    `SELECT u.id, u.name, u.email, u.role FROM admin_sessions s JOIN admin_users u ON u.id = s.admin_user_id
+  const [u] = await db.query<AdminUser & { mustChangePassword: boolean }>(
+    `SELECT u.id, u.name, u.email, u.role, u.must_change_password AS "mustChangePassword"
+       FROM admin_sessions s JOIN admin_users u ON u.id = s.admin_user_id
       WHERE s.token_hash = $1 AND s.expires_at > now() AND u.status = 'ACTIVE'`,
     [keyedHash(token)],
   );
   return u ?? null;
 }
 
-/** For pages and server actions. Redirects to login, or to the dashboard if the role lacks the capability. */
+/**
+ * For pages and server actions. Redirects to login; to the password page while a default or
+ * temporary password is still in use; or to the dashboard if the role lacks the capability.
+ */
 export async function requireAdmin(cap?: Capability): Promise<AdminUser> {
   const u = await currentAdmin();
   // A cookie is present (the middleware let the request through) but the session expired or was revoked.
   if (!u) redirect("/admin/login?expired=1");
+  if (u.mustChangePassword) redirect("/admin/password?required=1");
   if (cap && !can(u.role, cap)) redirect("/admin?denied=1");
   return u;
+}
+
+export type PasswordChangeResult = { ok: true } | { ok: false; error: string };
+
+export async function changePassword(adminId: number, current: string, next: string, confirm: string): Promise<PasswordChangeResult> {
+  if (next.length < 12) return { ok: false, error: "The new password must be at least 12 characters." };
+  if (next !== confirm) return { ok: false, error: "The new passwords do not match." };
+  if (next === current) return { ok: false, error: "Choose a password different from the current one." };
+  const db = await getDb();
+  const [u] = await db.query<{ password_hash: string }>(`SELECT password_hash FROM admin_users WHERE id = $1`, [adminId]);
+  if (!u || !verifyPassword(current, u.password_hash)) return { ok: false, error: "The current password is incorrect." };
+  await db.query(`UPDATE admin_users SET password_hash = $2, must_change_password = false WHERE id = $1`, [adminId, hashPassword(next)]);
+  // Sign out every other session for this account.
+  const token = (await cookies()).get(ADMIN_COOKIE)?.value ?? "";
+  await db.query(`DELETE FROM admin_sessions WHERE admin_user_id = $1 AND token_hash <> $2`, [adminId, keyedHash(token)]);
+  await audit(db, adminId, "password_changed", "admin_user", String(adminId));
+  return { ok: true };
 }
 
 /**
