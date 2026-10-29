@@ -56,11 +56,23 @@ export interface AdminUser {
 
 const attempts = new Map<string, { count: number; until: number }>();
 
-/** Returns the admin on success. Brute force is slowed with an in-memory lockout (nothing persisted). */
-export async function login(email: string, password: string): Promise<AdminUser | null> {
-  const key = email.toLowerCase();
+const MAX_ATTEMPTS = 5;
+
+export type LoginResult = { ok: true; user: AdminUser } | { ok: false; reason: "invalid" | "locked" };
+
+/** True when the current request arrived over HTTPS (directly or via a TLS-terminating proxy). */
+async function isHttps(): Promise<boolean> {
+  const h = await headers();
+  const proto = h.get("x-forwarded-proto")?.split(",")[0].trim();
+  if (proto) return proto === "https";
+  return (h.get("origin") ?? h.get("referer") ?? "").startsWith("https://");
+}
+
+/** Brute force is slowed with an in-memory lockout (nothing persisted). */
+export async function login(email: string, password: string): Promise<LoginResult> {
+  const key = email.trim().toLowerCase();
   const a = attempts.get(key);
-  if (a && a.count >= 5 && a.until > Date.now()) return null;
+  if (a && a.count >= MAX_ATTEMPTS && a.until > Date.now()) return { ok: false, reason: "locked" };
   const db = await getDb();
   const [u] = await db.query<AdminUser & { password_hash: string; status: string }>(
     `SELECT id, name, email, role, password_hash, status FROM admin_users WHERE lower(email) = $1`,
@@ -69,7 +81,7 @@ export async function login(email: string, password: string): Promise<AdminUser 
   if (!u || u.status !== "ACTIVE" || !verifyPassword(password, u.password_hash)) {
     const next = { count: (a && a.until > Date.now() ? a.count : 0) + 1, until: Date.now() + 15 * 60_000 };
     attempts.set(key, next);
-    return null;
+    return { ok: false, reason: next.count >= MAX_ATTEMPTS ? "locked" : "invalid" };
   }
   attempts.delete(key);
   const token = randomToken();
@@ -79,14 +91,22 @@ export async function login(email: string, password: string): Promise<AdminUser 
   ]);
   await db.query(`UPDATE admin_users SET last_login = now() WHERE id = $1`, [u.id]);
   await audit(db, u.id, "login", "admin_user", String(u.id));
+  // Secure follows the actual connection: a Secure cookie sent over plain http is silently dropped by
+  // browsers, which made sign-in appear to fail and loop back to the login page.
   (await cookies()).set(ADMIN_COOKIE, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    secure: await isHttps(),
+    sameSite: "lax",
     path: "/",
     maxAge: SESSION_HOURS * 3600,
   });
-  return { id: u.id, name: u.name, email: u.email, role: u.role };
+  return { ok: true, user: { id: u.id, name: u.name, email: u.email, role: u.role } };
+}
+
+/** Where to go after sign-in: the admin page originally requested, otherwise the dashboard. */
+export function safeAdminPath(next: unknown): string {
+  if (typeof next !== "string" || !/^\/admin(\/[\w\-/]*)?(\?[\w=&%.\-]*)?$/.test(next) || next.startsWith("/admin/login")) return "/admin";
+  return next;
 }
 
 export async function logout() {
@@ -114,7 +134,8 @@ export async function currentAdmin(): Promise<AdminUser | null> {
 /** For pages and server actions. Redirects to login, or to the dashboard if the role lacks the capability. */
 export async function requireAdmin(cap?: Capability): Promise<AdminUser> {
   const u = await currentAdmin();
-  if (!u) redirect("/admin/login");
+  // A cookie is present (the middleware let the request through) but the session expired or was revoked.
+  if (!u) redirect("/admin/login?expired=1");
   if (cap && !can(u.role, cap)) redirect("/admin?denied=1");
   return u;
 }

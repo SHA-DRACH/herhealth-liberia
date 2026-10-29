@@ -11,6 +11,7 @@ export async function POST(req: Request) {
     return error(403, "cross-origin request rejected");
   }
   const body = await readJson(req);
-  const u = await login(String(body?.email ?? ""), String(body?.password ?? ""));
-  return u ? json({ id: u.id, name: u.name, role: u.role }) : error(401, "invalid credentials");
+  const r = await login(String(body?.email ?? ""), String(body?.password ?? ""));
+  if (!r.ok) return error(r.reason === "locked" ? 429 : 401, r.reason === "locked" ? "too many attempts" : "invalid credentials");
+  return json({ id: r.user.id, name: r.user.name, role: r.user.role });
 }

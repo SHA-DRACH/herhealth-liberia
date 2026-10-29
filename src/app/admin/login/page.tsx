@@ -1,37 +1,40 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { currentAdmin } from "@/lib/admin/auth";
+import { currentAdmin, safeAdminPath } from "@/lib/admin/auth";
 import { getDb } from "@/lib/db";
-import { loginAction } from "../actions";
-import { btnPrimary, input, label } from "@/components/admin/ui";
+import { LoginForm } from "./LoginForm";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Admin sign in — HerHealth", robots: { index: false } };
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  if (await currentAdmin()) redirect("/admin");
+/** Team-only sign-in. The public HerHealth app never requires a login. */
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; expired?: string }> }) {
   const sp = await searchParams;
+  const next = safeAdminPath(sp.next);
+  if (await currentAdmin()) redirect(next);
   const db = await getDb();
-  const [{ n }] = await db.query<{ n: number }>(`SELECT count(*)::int AS n FROM admin_users`);
+  const [{ n }] = await db.query<{ n: number }>(`SELECT count(*)::int AS n FROM admin_users WHERE status = 'ACTIVE'`);
   return (
     <main className="grid min-h-dvh place-items-center bg-slate-50 p-4">
-      <form action={loginAction} className="w-full max-w-sm space-y-4 rounded-xl border border-slate-200 bg-white p-6">
-        <h1 className="text-xl font-bold text-plum-700">HerHealth Admin</h1>
-        {sp.error && <p role="alert" className="rounded bg-alert-50 p-2 text-sm text-alert-700">Sign-in failed. Check your details, or wait 15 minutes after 5 failed attempts.</p>}
+      <div className="w-full max-w-sm space-y-4 rounded-xl border border-slate-200 bg-white p-6">
+        <div>
+          <h1 className="text-xl font-bold text-plum-700">HerHealth Admin</h1>
+          <p className="mt-1 text-sm text-slate-600">Sign-in for the HerHealth team only.</p>
+        </div>
+        {sp.expired && <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-700">Your session ended. Please sign in again.</p>}
         {n === 0 && (
-          <p className="rounded bg-amber-50 p-2 text-sm text-amber-700">
-            No admin accounts exist yet. Create the first Super Admin on the server with <code>npm run admin:create</code>.
+          <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-700">
+            No admin accounts exist yet. Stop the server and create the first Super Admin with{" "}
+            <code className="text-xs">npm.cmd run admin:create -- --name &quot;Your Name&quot; --email you@example.org --role SUPER_ADMIN</code>
           </p>
         )}
-        <label className={label}>
-          Email
-          <input name="email" type="email" required autoComplete="username" className={input} />
-        </label>
-        <label className={label}>
-          Password
-          <input name="password" type="password" required autoComplete="current-password" className={input} />
-        </label>
-        <button className={`${btnPrimary} w-full`}>Sign in</button>
-      </form>
+        <LoginForm next={next} />
+        <p className="text-center text-sm">
+          <Link href="/" className="text-plum-700 underline">
+            ← Back to HerHealth
+          </Link>
+        </p>
+      </div>
     </main>
   );
 }

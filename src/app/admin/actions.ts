@@ -6,7 +6,7 @@ import { TEST_MODE_COOKIE } from "@/lib/environment";
 import { SAFETY_MESSAGE_KEYS, type SafetyMessageKey } from "@/lib/safety/messages";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
-import { audit, login, logout, requireAdmin, ROLES, type Capability, type Role } from "@/lib/admin/auth";
+import { audit, login, logout, requireAdmin, ROLES, safeAdminPath, type Capability, type Role } from "@/lib/admin/auth";
 import { hashPassword } from "@/lib/crypto";
 import * as wf from "@/lib/content/workflow";
 import { reindexArticle } from "@/lib/content/knowledge";
@@ -41,9 +41,25 @@ async function act(cap: Capability, back: string, action: string, fn: (adminId: 
 
 // ---------- auth ----------
 
-export async function loginAction(form: FormData) {
-  const u = await login(str(form, "email"), String(form.get("password") ?? ""));
-  redirect(u ? "/admin" : "/admin/login?error=1");
+export interface LoginState {
+  error: string | null;
+  email: string;
+}
+
+export async function loginAction(_prev: LoginState, form: FormData): Promise<LoginState> {
+  const email = str(form, "email");
+  const password = String(form.get("password") ?? "");
+  if (!email || !password) return { error: "Enter your email and password.", email };
+  const result = await login(email, password);
+  if (!result.ok)
+    return {
+      email,
+      error:
+        result.reason === "locked"
+          ? "Too many failed attempts. For your security, sign-in is paused for 15 minutes."
+          : "The email or password is incorrect, or the account is disabled.",
+    };
+  redirect(safeAdminPath(str(form, "next")));
 }
 
 export async function logoutAction() {
