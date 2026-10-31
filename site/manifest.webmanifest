@@ -1,0 +1,11 @@
+{
+  "name": "HerHealth Liberia",
+  "short_name": "HerHealth",
+  "description": "Trusted health information. In your language. In your hands.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fdf9f3",
+  "theme_color": "#84325f",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
