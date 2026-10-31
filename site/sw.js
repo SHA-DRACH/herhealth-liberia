@@ -1,6 +1,6 @@
 // HerHealth static preview: the whole app is small, so it is cached on first visit and works offline.
 // Questions typed into Ask HerHealth are never sent anywhere, so nothing sensitive is cached.
-const CACHE = "hh-static-v1";
+const CACHE = "hh-static-v2";
 const FILES = ["./", "index.html", "css/styles.css", "js/app.js", "js/content.js", "js/safety.js", "js/safety-cases.js", "vendor/aos.js", "vendor/aos.css", "icon.svg", "manifest.webmanifest"];
 self.addEventListener("install", (e) => e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting())));
 self.addEventListener("activate", (e) =>

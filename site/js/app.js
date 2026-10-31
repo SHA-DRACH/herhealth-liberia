@@ -6,7 +6,6 @@ import { ask } from "./safety.js";
 const main = document.getElementById("main");
 const COUNTIES = ["Bomi", "Bong", "Gbarpolu", "Grand Bassa", "Grand Cape Mount", "Grand Gedeh", "Grand Kru", "Lofa", "Margibi", "Maryland", "Montserrado", "Nimba", "River Cess", "River Gee", "Sinoe"];
 const SERVICES = { maternal: "Maternal health", family_planning: "Family planning", hiv_sti: "HIV/STI services", adolescent: "Adolescent health", emergency: "Emergency care", gbv_support: "GBV/support services", general: "General health" };
-const DISCLAIMER = "HerHealth provides educational health information and does not replace a qualified health professional.";
 
 // ---------- helpers ----------
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -32,7 +31,7 @@ const sourceLine = (key) => {
 };
 const list = (items) => `<ul>${items.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>`;
 const back = (href, label = "Back") => `<a class="back" href="${href}">← ${label}</a>`;
-const footer = `<p class="small muted center">${DISCLAIMER}</p>`;
+const footer = "";
 
 function thumbs(id, question) {
   const done = store.get("hh.ratings", {})[id];
@@ -47,18 +46,21 @@ const views = {
     const h = new Date().getHours();
     const greet = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
     return `
-      <section><p class="muted">${greet} 👋</p><h1>What would you like to know about?</h1></section>
-      <div class="grid-2">${CATEGORIES.map(
+      <section class="hero" data-anim="fade-down"><p class="hero-greet">${greet} 👋</p><h1>What would you like to know about?</h1>
+        <p class="hero-sub">Trusted reproductive and maternal health information for women and girls in Liberia — private, free and in plain language.</p></section>
+      <div class="grid-cats">${CATEGORIES.map(
         (c) => `<a class="card cat-tile" href="#/learn/${c.slug}"><span aria-hidden="true">${c.icon}</span><span>${esc(c.name)}</span></a>`,
       ).join("")}</div>
-      <section class="card stack"><h2>Have a question?</h2><a class="btn btn-primary btn-block" href="#/ask">💬 Ask HerHealth</a></section>
-      <section class="card stack"><h2>Need professional help?</h2><a class="btn btn-teal btn-block" href="#/help">📍 Find Health Services</a></section>
+      <div class="grid-split">
+        <section class="card stack cta"><h2>Have a question?</h2><p class="muted small">Ask privately. Your question never leaves your phone.</p><a class="btn btn-primary btn-block" href="#/ask">💬 Ask HerHealth</a></section>
+        <section class="card stack cta"><h2>Need professional help?</h2><p class="muted small">Find verified health and support services near you.</p><a class="btn btn-teal btn-block" href="#/help">📍 Find Health Services</a></section>
+      </div>
       ${footer}`;
   },
 
   learn() {
     return `<h1>Learn</h1><p class="muted">Short health topics written from WHO and NHS guidance.</p>
-      <div class="stack">${CATEGORIES.map((c) => {
+      <div class="grid-list">${CATEGORIES.map((c) => {
         const n = articlesIn(c.slug).length;
         return `<a class="card list-link" href="#/learn/${c.slug}"><span class="icon" aria-hidden="true">${c.icon}</span><span class="grow">${esc(c.name)}</span><span class="small muted">${n} ${n === 1 ? "article" : "articles"}</span></a>`;
       }).join("")}</div>`;
@@ -68,7 +70,7 @@ const views = {
     const c = category(slug);
     if (!c) return views.notFound();
     return `${back("#/learn")}<h1>${c.icon} ${esc(c.name)}</h1>
-      <div class="stack">${articlesIn(slug)
+      <div class="grid-list">${articlesIn(slug)
         .map((a) => `<a class="card" href="#/article/${a.slug}" style="text-decoration:none;color:inherit"><strong>${esc(a.title)}</strong><p class="small muted">${esc(a.summary)}</p></a>`)
         .join("")}</div>`;
   },
@@ -78,7 +80,7 @@ const views = {
     if (!a) return views.notFound();
     const saved = store.get("hh.saved", []).includes(slug);
     return `${back(`#/learn/${a.category}`)}
-      <article class="stack">
+      <article class="stack reading">
         <h1>${esc(a.title)}</h1>
         <span class="review-badge">${esc(REVIEW_STATUS)}</span>
         <div class="tools"><button class="btn btn-secondary" data-action="text-size">Aa Text size</button>
@@ -100,7 +102,7 @@ const views = {
 
   ask() {
     const suggestions = ["Is period pain normal?", "When should I start antenatal care?", "How can STIs be prevented?", "What is HPV and how can women protect themselves?"];
-    return `<header><h1>Ask HerHealth</h1><p class="muted">Ask a private question about reproductive or maternal health.</p></header>
+    return `<div class="reading stack"><header><h1>Ask HerHealth</h1><p class="muted">Ask a private question about reproductive or maternal health.</p></header>
       <form class="card stack" id="ask-form" autocomplete="off">
         <label for="q" class="sr-only" style="position:absolute;left:-999px">Type your question</label>
         <textarea id="q" name="q" rows="3" maxlength="500" placeholder="Type your question..."></textarea>
@@ -108,32 +110,32 @@ const views = {
         <p class="small muted">🔒 Your question stays on this phone and is never sent or saved. HerHealth is not a doctor and cannot diagnose.</p>
       </form>
       <div class="stack" id="suggestions">${suggestions.map((s) => `<button class="card suggestion" data-suggest="${esc(s)}">${esc(s)}</button>`).join("")}</div>
-      <section id="result" class="stack" aria-live="polite"></section>`;
+      <section id="result" class="stack" aria-live="polite"></section></div>`;
   },
 
   help() {
-    return `<h1>Find Health Services</h1>
-      <form class="card stack" id="help-form">
+    return `<div class="reading stack"><h1>Find Health Services</h1>
+      <form class="card help-form" id="help-form">
         <div class="field"><label for="county">County</label><select id="county"><option value="">All counties</option>${COUNTIES.map((c) => `<option>${c}</option>`).join("")}</select></div>
         <div class="field"><label for="service">Service needed</label><select id="service"><option value="">All services</option>${Object.entries(SERVICES)
           .map(([k, v]) => `<option value="${k}">${v}</option>`)
           .join("")}</select></div>
-        <button class="btn btn-teal btn-block" type="submit">Search</button>
+        <button class="btn btn-teal" type="submit">Search</button>
       </form>
       <p class="card muted" id="help-result" role="status" hidden>No verified services are currently available for this search. We are continuing to verify health services.</p>
       <p class="small muted">HerHealth only lists facilities and phone numbers that its team has checked directly. None have been published in this preview yet.</p>
-      <a class="btn btn-secondary btn-block" href="#/emergency">Emergency information</a>`;
+      <a class="btn btn-secondary btn-block" href="#/emergency">Emergency information</a></div>`;
   },
 
   emergency() {
-    return `<h1 style="color:var(--alert-700)">⚠ Emergency information</h1>
+    return `<div class="reading stack"><h1 style="color:var(--alert-700)">⚠ Emergency information</h1>
       <p class="card warning" style="font-size:1.1rem;font-weight:600">If you think you or someone else needs urgent medical help, go to the nearest health facility now.</p>
       <p class="card muted">Detailed emergency guidance is being prepared and will appear here once it has been reviewed by a qualified health professional.</p>
-      <section class="stack"><h2>Verified emergency services</h2><p class="card muted">No verified emergency contacts have been published yet.</p></section>`;
+      <section class="stack"><h2>Verified emergency services</h2><p class="card muted">No verified emergency contacts have been published yet.</p></section></div>`;
   },
 
   about() {
-    return `<h1>About &amp; privacy</h1>
+    return `<div class="reading stack"><h1>About &amp; privacy</h1>
       <section class="card stack"><h2>This is a prototype preview</h2>
         <p>HerHealth Liberia is being developed by SkillBridge Liberia Corporation. This preview shows how the service works. Its health information is written in plain language from World Health Organization (WHO) and NHS guidance, with each source shown. It has <strong>not yet been reviewed</strong> by a HerHealth health reviewer and must not replace advice from a qualified health worker.</p></section>
       <section class="card stack"><h2>Your privacy</h2>
@@ -144,11 +146,11 @@ const views = {
         <ul><li>HerHealth is not a doctor or nurse and cannot diagnose or prescribe medicine.</li><li>Answers come only from the HerHealth library. If there is no matching information, HerHealth says so.</li>
         <li>If a question sounds like an emergency, HerHealth will not answer normally and will ask you to get urgent care.</li></ul></section>
       <a class="btn btn-secondary btn-block" href="#/evidence">Prototype evidence &amp; safety tests</a>
-      <p class="small muted center">Developed by SkillBridge Liberia</p>`;
+      </div>`;
   },
 
   evidence() {
-    return `<h1>Prototype evidence</h1>
+    return `<div class="reading stack"><h1>Prototype evidence</h1>
       <div class="card"><table class="table"><thead><tr><th>Metric</th><th>Value</th><th>Purpose</th></tr></thead><tbody>
         <tr><th scope="row">Health articles</th><td><strong>${ARTICLES.length}</strong></td><td class="muted">Education</td></tr>
         <tr><th scope="row">Questions answered in the library</th><td><strong>${LIBRARY.length}</strong></td><td class="muted">AI utilization</td></tr>
@@ -160,7 +162,7 @@ const views = {
       <section class="card stack small"><h2>Methodology</h2>
         <p>This static preview does not collect usage data, so it shows no user counts. Real, anonymised usage figures are produced by the full HerHealth system once it is hosted.</p>
         <p>The safety tests run live in your browser now: each predefined question goes through the same Ask HerHealth decision steps a user's question does, and the result is compared with what the safety design expects.</p></section>
-      <section class="card stack"><h2>Safety test results</h2><div id="safety-results" class="small muted">Running…</div></section>`;
+      <section class="card stack"><h2>Safety test results</h2><div id="safety-results" class="small muted">Running…</div></section></div>`;
   },
 
   notFound() {
@@ -253,7 +255,7 @@ function route() {
   else html = (views[key] ?? views.notFound)();
   main.innerHTML = html;
   document.title = "HerHealth Liberia";
-  document.querySelectorAll(".bottom-nav a").forEach((n) => {
+  document.querySelectorAll(".bottom-nav a, .top-nav a, .menu-btn").forEach((n) => {
     const nav = n.dataset.nav;
     const active = nav === key || (nav === "learn" && (key === "article" || key === "learn")) || (nav === "help" && key === "emergency");
     if (active) n.setAttribute("aria-current", "page");
@@ -316,33 +318,47 @@ main.addEventListener("click", async (e) => {
   }
 });
 
-// Quick Exit: wipe the screen and the question, neutral title, replace this history entry.
-document.getElementById("quick-exit").addEventListener("click", () => {
-  document.title = "New tab";
-  document.body.innerHTML = "";
-  try {
-    sessionStorage.clear();
-  } catch {}
-  location.replace("https://www.google.com/");
-});
 // If the browser restores this page from its back/forward cache, never show an old answer.
 window.addEventListener("pageshow", (e) => e.persisted && route());
 
 // ---------- animations (AOS) ----------
 let aosReady = false;
+
+/**
+ * AOS rules, most specific first. Items inside a grid are staggered so they cascade in;
+ * everything else gets a short delay based on its order on the page.
+ */
+const ANIMATIONS = [
+  ["[data-anim]", (el) => el.dataset.anim],
+  [".grid-cats > *", () => "zoom-in-up"],
+  [".grid-list > *", () => "fade-up"],
+  [".grid-split > :first-child", () => "fade-right"],
+  [".grid-split > :last-child", () => "fade-left"],
+  [".key-points", () => "fade-right"],
+  [".warning", () => "fade-left"],
+  [".pathway-red, .pathway-protection, .pathway-crisis", () => "zoom-in"],
+  ["h1", () => "fade-down"],
+  [".card", () => "fade-up"],
+  ["main > .btn, .reading > .btn, .stack > .btn", () => "zoom-in"],
+];
+
 function refreshAnimations() {
   if (!aosReady) return;
-  main.querySelectorAll("h1, .card, .btn").forEach((el, i) => {
-    if (!el.hasAttribute("data-aos")) {
-      el.setAttribute("data-aos", "fade-up");
-      el.setAttribute("data-aos-delay", String(Math.min(i, 6) * 40));
-    }
-  });
+  let order = 0;
+  for (const [selector, pick] of ANIMATIONS) {
+    main.querySelectorAll(selector).forEach((el) => {
+      if (el.hasAttribute("data-aos")) return;
+      el.setAttribute("data-aos", pick(el));
+      const inGrid = el.parentElement?.matches(".grid-cats, .grid-list");
+      const index = inGrid ? [...el.parentElement.children].indexOf(el) : order++;
+      el.setAttribute("data-aos-delay", String(Math.min(index, 8) * (inGrid ? 70 : 50)));
+    });
+  }
   window.AOS.refreshHard();
 }
 window.addEventListener("load", () => {
   if (window.AOS && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    window.AOS.init({ duration: 450, easing: "ease-out-cubic", once: true, offset: 24 });
+    window.AOS.init({ duration: 650, easing: "ease-out-cubic", once: true, offset: 30, anchorPlacement: "top-bottom" });
     aosReady = true;
     refreshAnimations();
   }
