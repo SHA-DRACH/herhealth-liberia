@@ -376,16 +376,13 @@ window.addEventListener("load", () => {
 });
 
 // ---------- welcome splash ----------
-// Shown once per visit for about 2 seconds (shorter, without motion, for reduced-motion users).
+// Shown for 3 seconds on every load and refresh (without motion for reduced-motion users).
+const SPLASH_MS = 3000;
 function dismissSplash() {
   const splash = document.getElementById("splash");
   if (!splash) return;
-  try {
-    sessionStorage.setItem("hh.splashSeen", "1");
-  } catch {}
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const shownFor = performance.now();
-  const wait = Math.max(0, (reduce ? 700 : 2000) - shownFor);
+  const wait = Math.max(0, SPLASH_MS - performance.now());
   setTimeout(() => {
     splash.classList.add("is-leaving");
     setTimeout(() => splash.remove(), reduce ? 0 : 550);
