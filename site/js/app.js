@@ -23,6 +23,14 @@ const store = {
     } catch {}
   },
 };
+/** The AI assistant model. Shown on Ask, About and Evidence so reviewers know exactly what powers answers. */
+const AI_MODEL = { name: "Claude Opus 5.5", maker: "Anthropic", id: "claude-opus-5-5" };
+const assistantCard = `<section class="card ai-card stack small">
+  <div class="ai-head"><span class="ai-badge" aria-hidden="true">✦</span><div><strong>HerHealth Assistant</strong><br><span class="muted">AI model: ${AI_MODEL.name} by ${AI_MODEL.maker} (<code>${AI_MODEL.id}</code>)</span></div></div>
+  <p><strong>Full system:</strong> ${AI_MODEL.name} rewrites medically reviewed HerHealth answers in plain language and double-checks the safety level. It never answers from general knowledge, never diagnoses and never prescribes.</p>
+  <p><strong>This public preview:</strong> no AI model is connected (that would expose a secret key). Answers are matched from the HerHealth library on your phone, so the wording is exactly as written from WHO, NHS and UNICEF guidance.</p>
+</section>`;
+
 const category = (slug) => CATEGORIES.find((c) => c.slug === slug);
 const articlesIn = (slug) => ARTICLES.filter((a) => a.category === slug);
 const sourceLine = (key) => {
@@ -59,7 +67,7 @@ const views = {
   },
 
   learn() {
-    return `<h1>Learn</h1><p class="muted">Short health topics written from WHO and NHS guidance.</p>
+    return `<h1>Learn</h1><p class="muted">Short health topics written from WHO, NHS and UNICEF guidance.</p>
       <div class="grid-list">${CATEGORIES.map((c) => {
         const n = articlesIn(c.slug).length;
         return `<a class="card list-link" href="#/learn/${c.slug}"><span class="icon" aria-hidden="true">${c.icon}</span><span class="grow">${esc(c.name)}</span><span class="small muted">${n} ${n === 1 ? "article" : "articles"}</span></a>`;
@@ -103,6 +111,7 @@ const views = {
   ask() {
     const suggestions = ["Is period pain normal?", "When should I start antenatal care?", "How can STIs be prevented?", "What is HPV and how can women protect themselves?"];
     return `<div class="reading stack"><header><h1>Ask HerHealth</h1><p class="muted">Ask a private question about reproductive or maternal health.</p></header>
+      ${assistantCard}
       <form class="card stack" id="ask-form" autocomplete="off">
         <label for="q" class="sr-only" style="position:absolute;left:-999px">Type your question</label>
         <textarea id="q" name="q" rows="3" maxlength="500" placeholder="Type your question..."></textarea>
@@ -142,6 +151,7 @@ const views = {
         <ul><li>No name, phone number, email or account is needed.</li><li>Questions you type in Ask HerHealth are answered on your phone and are never sent or saved.</li>
         <li>This preview collects no analytics and uses no trackers.</li><li>Only your text-size setting, ratings and saved articles are kept on this phone.</li></ul>
         <button class="btn btn-secondary btn-block" data-action="clear">🗑 Clear everything saved on this phone</button></section>
+      ${assistantCard}
       <section class="card stack"><h2>AI limitations</h2>
         <ul><li>HerHealth is not a doctor or nurse and cannot diagnose or prescribe medicine.</li><li>Answers come only from the HerHealth library. If there is no matching information, HerHealth says so.</li>
         <li>If a question sounds like an emergency, HerHealth will not answer normally and will ask you to get urgent care.</li></ul></section>
@@ -156,6 +166,7 @@ const views = {
         <tr><th scope="row">Questions answered in the library</th><td><strong>${LIBRARY.length}</strong></td><td class="muted">AI utilization</td></tr>
         <tr><th scope="row">Topics covered</th><td><strong>${CATEGORIES.filter((c) => articlesIn(c.slug).length).length}/${CATEGORIES.length}</strong></td><td class="muted">Coverage</td></tr>
         <tr><th scope="row">Official sources cited</th><td><strong>${Object.keys(SOURCES).length}</strong></td><td class="muted">Evidence base</td></tr>
+        <tr><th scope="row">AI assistant model</th><td><strong>${AI_MODEL.name}</strong><br><span class="small muted">${AI_MODEL.maker} · full system only</span></td><td class="muted">AI-assisted answers</td></tr>
         <tr><th scope="row">Languages available</th><td><strong>1</strong></td><td class="muted">Localization</td></tr>
         <tr><th scope="row">Safety tests passed</th><td id="safety-score"><strong>running…</strong></td><td class="muted">AI safety</td></tr>
       </tbody></table></div>
@@ -200,7 +211,7 @@ const PATHWAY_HTML = {
     const related = r.related.length
       ? `<section class="card stack small"><strong>Related questions</strong>${r.related.map((x) => `<button class="suggestion" style="background:none;padding:0;color:var(--plum-700);text-align:left;min-height:36px" data-suggest="${esc(x.q)}">${esc(x.q)}</button>`).join("")}</section>`
       : "";
-    return `<div class="card stack answer"><h2>HerHealth</h2><p>${esc(b.a)}</p>${amber}<span class="review-badge">${esc(REVIEW_STATUS)}</span></div>
+    return `<div class="card stack answer"><h2>HerHealth</h2><p>${esc(b.a)}</p>${amber}<p class="small muted">✦ HerHealth Assistant · matched from the HerHealth library (preview — ${AI_MODEL.name} is used in the full system)</p><span class="review-badge">${esc(REVIEW_STATUS)}</span></div>
       <div class="card warning"><h3>⚠ Seek professional care if…</h3>${list(b.whenToGetHelp)}</div>
       <div class="card small"><strong>Source:</strong> <a href="#/article/${b.article}">${esc(b.articleTitle)}</a> — ${b.sources.map((k) => `${esc(SOURCES[k].org)}, <a href="${esc(SOURCES[k].url)}" target="_blank" rel="noopener noreferrer">${esc(SOURCES[k].title)}</a>`).join("; ")}</div>
       ${related}<a class="btn btn-teal" href="#/help">📍 Find nearest listed health service</a>${thumbs(`answer:${b.id}`, "Was this useful?")}${footer}`;

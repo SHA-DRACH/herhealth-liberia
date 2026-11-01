@@ -4,7 +4,7 @@ HerHealth Liberia is an open-source, AI-assisted reproductive and maternal healt
 
 > **Status: MVP 0.1 prototype.** The software is complete and tested. The health knowledge base, verified facility directory, pilot-language translations and usability-test data are **intentionally empty** until they are supplied and reviewed by qualified people (see [What the team must supply](#what-the-team-must-supply)). No content, users, facilities or statistics are fabricated or seeded.
 
-> **Live prototype preview:** https://sha-drach.github.io/herhealth-liberia/ — a static HTML/CSS/JavaScript version (folder `site/`) with 14 articles and 50 questions and answers written in plain language from WHO and NHS guidance, each with its source. Ask HerHealth, the safety pathways and the 56 safety tests run entirely in the browser. Content is awaiting review by a qualified health reviewer.
+> **Live prototype preview:** https://sha-drach.github.io/herhealth-liberia/ — a static HTML/CSS/JavaScript version (folder `site/`) with 28 articles and 92 questions and answers across 10 topics, written in plain language from 27 WHO, NHS and UNICEF pages, each with its source. The assistant model for the full system is Claude Opus 5.5 (Anthropic); the static preview matches answers from the library without calling a model. Ask HerHealth, the safety pathways and the 56 safety tests run entirely in the browser. Content is awaiting review by a qualified health reviewer.
 
 ## Problem
 

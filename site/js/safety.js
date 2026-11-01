@@ -78,7 +78,8 @@ export const isOutOfScope = (q) => !normalize(q).some((w) => DOMAIN.some((p) => 
 const STOP = new Set(
   ("a an the and or but if of to in on at for with by from as is are was were be been being it its this that these those you your yours i me my we our " +
     "they them their he she his her can could may might will would should do does did not no so than then there here what when where which who whom why how " +
-    "also very just more most some any about into over under such only own same too have has had get got am im i'm want know tell please much many")
+    "also very just more most some any about into over under such only own same too have has had get got am im i'm want know tell please much many " +
+    "ok okay fine alright right thing things really yes make makes")
     .split(" "),
 );
 
@@ -94,34 +95,64 @@ export function stem(w) {
   return w;
 }
 
-export const keywords = (text) => [...new Set(normalize(text).filter((w) => w.length > 1 && !STOP.has(w)).map(stem))];
+export const keywords = (text) => [...new Set(normalize(text).filter((w) => w.length > 1 && !STOP.has(w) && !/^d+$/.test(w)).map(stem))];
+
+const indexCache = new WeakMap();
+
+/** Pre-computes each pair's word sets and how rare each word is across the library (IDF). */
+function indexFor(library) {
+  let idx = indexCache.get(library);
+  if (idx) return idx;
+  const entries = library.map((item) => ({
+    item,
+    question: new Set(keywords(item.q)),
+    strong: new Set(keywords(`${item.tags ?? ""} ${item.articleTitle}`)),
+    weak: new Set(keywords(item.a)),
+  }));
+  const df = new Map();
+  for (const e of entries) for (const w of new Set([...e.question, ...e.strong, ...e.weak])) df.set(w, (df.get(w) ?? 0) + 1);
+  const rawIdf = (w) => Math.log(1 + entries.length / df.get(w));
+  // A word the library never uses (e.g. a disease it does not cover) gets the highest weight, so a
+  // question about an uncovered topic falls back honestly instead of matching something unrelated.
+  const max = Math.max(...[...df.keys()].map(rawIdf));
+  const idf = (w) => (df.has(w) ? rawIdf(w) : max * 1.5);
+  idx = { entries, idf };
+  indexCache.set(library, idx);
+  return idx;
+}
 
 /**
- * Scores every Q&A pair against the question. Confidence = share of the question's meaningful words
- * found in the pair (question words count double). Only pairs above the threshold are used.
+ * Scores every Q&A pair against the question. Rare, specific words ("malaria", "endometriosis")
+ * count more than common ones ("baby", "start"), and a word in the stored question counts more
+ * than one in its tags or answer. Confidence = weighted share of the question's meaningful words
+ * found in the pair; only pairs above the threshold are used.
  */
 export function search(question, library, minCoverage = 0.5) {
   const q = keywords(question);
   if (!q.length) return [];
+  const { entries, idf } = indexFor(library);
+  const total = q.reduce((s, w) => s + idf(w), 0);
   const results = [];
-  for (const item of library) {
-    const strong = new Set(keywords(`${item.q} ${item.tags ?? ""} ${item.articleTitle}`));
-    const weak = new Set(keywords(item.a));
-    let score = 0;
+  for (const e of entries) {
     let found = 0;
+    let score = 0;
     for (const w of q) {
-      if (strong.has(w)) {
-        score += 2;
-        found++;
-      } else if (weak.has(w)) {
-        score += 1;
-        found++;
+      const weight = idf(w);
+      if (e.question.has(w)) {
+        found += weight;
+        score += weight * 2;
+      } else if (e.strong.has(w)) {
+        found += weight;
+        score += weight * 1.6;
+      } else if (e.weak.has(w)) {
+        found += weight * 0.8;
+        score += weight;
       }
     }
-    const coverage = found / q.length;
-    if (coverage >= minCoverage) results.push({ item, coverage, score });
+    const coverage = found / total;
+    if (coverage >= minCoverage) results.push({ item: e.item, coverage, score });
   }
-  return results.sort((a, b) => b.coverage - a.coverage || b.score - a.score);
+  return results.sort((a, b) => b.score - a.score || b.coverage - a.coverage);
 }
 
 /** The full Ask HerHealth decision, in the same order as the full application's pipeline. */

@@ -6,6 +6,8 @@
 // review each item before the service is used by the public. Figures are global or regional, not
 // Liberia-specific.
 
+import { MORE_ARTICLES, MORE_CATEGORIES, MORE_SOURCES } from "./content-more.js";
+
 const ACCESSED = "2026-10-31";
 export const REVIEW_STATUS = "Sourced from official health organisations · Awaiting review by a HerHealth health reviewer";
 
@@ -100,7 +102,7 @@ export const ARTICLES = [
     faqs: [
       { q: "Is period pain normal?", tags: "cramps hurt stomach tummy ache", a: "Some period pain is common. It happens because the womb tightens during your period, and it usually lasts up to 3 days. Pain that is severe, getting worse, or stops your normal daily life should be checked by a health worker." },
       { q: "What can I do at home for period pain?", tags: "relief help cramps remedy home ease", a: "A warm bath or shower, a hot water bottle wrapped in a cloth on your tummy, gently rubbing your tummy and back, and gentle exercise such as walking can help. Cutting down on alcohol and not smoking may also help." },
-      { q: "When is period pain a sign of a problem?", tags: "severe bad worse doctor problem endometriosis", a: "Get help if the pain is severe or worse than usual, stops your daily activities, or comes with heavier or irregular periods, pain during sex or when you pee or poo, bleeding between periods, a swollen tummy or weight loss." },
+      { q: "When is period pain a sign of a problem?", tags: "severe bad worse doctor problem", a: "Get help if the pain is severe or worse than usual, stops your daily activities, or comes with heavier or irregular periods, pain during sex or when you pee or poo, bleeding between periods, a swollen tummy or weight loss." },
     ],
   },
   {
@@ -375,6 +377,10 @@ export const ARTICLES = [
     ],
   },
 ];
+
+Object.assign(SOURCES, MORE_SOURCES);
+CATEGORIES.push(...MORE_CATEGORIES);
+ARTICLES.push(...MORE_ARTICLES);
 
 /** Flattened Q&A library used by Ask HerHealth. */
 export const LIBRARY = ARTICLES.flatMap((a) =>
