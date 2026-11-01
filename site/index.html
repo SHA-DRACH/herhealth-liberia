@@ -13,6 +13,23 @@
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
+    <!-- Welcome splash: shown once per visit, removed by js/app.js (CSS hides it anyway after 4 s). -->
+    <div id="splash" class="splash" role="status" aria-label="HerHealth Liberia is loading">
+      <script>
+        try {
+          if (sessionStorage.getItem("hh.splashSeen")) document.getElementById("splash").remove();
+        } catch (e) {}
+      </script>
+      <div class="splash-logo-wrap" aria-hidden="true">
+        <span class="splash-ring"></span>
+        <span class="splash-ring splash-ring-2"></span>
+        <span class="splash-logo">♀</span>
+      </div>
+      <p class="splash-name">HerHealth Liberia</p>
+      <p class="splash-tagline">Trusted health information. In your language. In your hands.</p>
+      <div class="splash-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+      <p class="splash-by">SkillBridge Liberia</p>
+    </div>
     <a class="skip" href="#main">Skip to content</a>
     <header class="topbar">
       <div class="topbar-inner">
@@ -39,7 +56,14 @@
       <a href="#/ask" data-nav="ask"><span aria-hidden="true">💬</span>Ask</a>
       <a href="#/help" data-nav="help"><span aria-hidden="true">📍</span>Help</a>
     </nav>
-    <noscript><p class="noscript">HerHealth needs JavaScript turned on to show its health information.</p></noscript>
+    <noscript>
+      <style>
+        .splash {
+          display: none;
+        }
+      </style>
+      <p class="noscript">HerHealth needs JavaScript turned on to show its health information.</p>
+    </noscript>
     <script src="vendor/aos.js" defer></script>
     <script type="module" src="js/app.js"></script>
   </body>
