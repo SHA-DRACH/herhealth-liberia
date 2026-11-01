@@ -13,13 +13,8 @@
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
-    <!-- Welcome splash: shown once per visit, removed by js/app.js (CSS hides it anyway after 4 s). -->
+    <!-- Welcome splash: shown for 3 s on every load and refresh, removed by js/app.js (CSS hides it anyway after 5 s). -->
     <div id="splash" class="splash" role="status" aria-label="HerHealth Liberia is loading">
-      <script>
-        try {
-          if (sessionStorage.getItem("hh.splashSeen")) document.getElementById("splash").remove();
-        } catch (e) {}
-      </script>
       <div class="splash-logo-wrap" aria-hidden="true">
         <span class="splash-ring"></span>
         <span class="splash-ring splash-ring-2"></span>
