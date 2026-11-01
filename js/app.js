@@ -375,6 +375,25 @@ window.addEventListener("load", () => {
   }
 });
 
+// ---------- welcome splash ----------
+// Shown once per visit for about 2 seconds (shorter, without motion, for reduced-motion users).
+function dismissSplash() {
+  const splash = document.getElementById("splash");
+  if (!splash) return;
+  try {
+    sessionStorage.setItem("hh.splashSeen", "1");
+  } catch {}
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const shownFor = performance.now();
+  const wait = Math.max(0, (reduce ? 700 : 2000) - shownFor);
+  setTimeout(() => {
+    splash.classList.add("is-leaving");
+    setTimeout(() => splash.remove(), reduce ? 0 : 550);
+  }, wait);
+}
+if (document.readyState === "complete") dismissSplash();
+else window.addEventListener("load", dismissSplash);
+
 document.documentElement.style.setProperty("--text-scale", [1, 1.15, 1.3][store.get("hh.textScale", 0)] ?? 1);
 window.addEventListener("hashchange", route);
 route();

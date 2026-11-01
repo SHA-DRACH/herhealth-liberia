@@ -670,3 +670,160 @@ label {
   padding: 0.05rem 0.35rem;
   border-radius: 0.3rem;
 }
+
+/* ---------- welcome splash ---------- */
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  color: #fff;
+  background: radial-gradient(circle at 50% 38%, var(--plum-500), var(--plum-700) 55%, var(--plum-900));
+  /* Safety net: disappears on its own even if JavaScript never runs. */
+  animation: splash-auto-hide 0.6s ease 4s forwards;
+}
+.splash.is-leaving {
+  animation: splash-leave 0.55s ease forwards;
+}
+.splash-logo-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 7.5rem;
+  height: 7.5rem;
+  margin-bottom: 0.75rem;
+}
+.splash-logo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 6rem;
+  height: 6rem;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--plum-600);
+  font-size: 3.4rem;
+  line-height: 1;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.25);
+  animation:
+    splash-spin-in 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.25) both,
+    splash-pulse 1.1s ease-in-out 0.9s infinite;
+}
+.splash-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 2px solid rgb(255 255 255 / 0.7);
+  animation: splash-ripple 1.8s ease-out 0.5s infinite;
+  opacity: 0;
+}
+.splash-ring-2 {
+  animation-delay: 1.4s;
+}
+.splash-name {
+  font-size: clamp(1.6rem, 7vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  animation: splash-rise 0.6s ease 0.35s both;
+}
+.splash-tagline {
+  max-width: 22rem;
+  color: var(--plum-100);
+  animation: splash-rise 0.6s ease 0.55s both;
+}
+.splash-dots {
+  display: flex;
+  gap: 0.45rem;
+  margin-top: 1rem;
+  animation: splash-rise 0.6s ease 0.75s both;
+}
+.splash-dots span {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 999px;
+  background: #fff;
+  animation: splash-blink 1s ease-in-out infinite;
+}
+.splash-dots span:nth-child(2) {
+  animation-delay: 0.18s;
+}
+.splash-dots span:nth-child(3) {
+  animation-delay: 0.36s;
+}
+.splash-by {
+  position: absolute;
+  bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  font-size: 0.8rem;
+  color: var(--plum-100);
+  opacity: 0.85;
+}
+
+@keyframes splash-spin-in {
+  from {
+    transform: rotate(-540deg) scale(0.2);
+    opacity: 0;
+  }
+  to {
+    transform: rotate(0) scale(1);
+    opacity: 1;
+  }
+}
+@keyframes splash-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+@keyframes splash-ripple {
+  from {
+    transform: scale(0.8);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+@keyframes splash-blink {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+@keyframes splash-rise {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes splash-leave {
+  to {
+    opacity: 0;
+    transform: scale(1.04);
+    visibility: hidden;
+  }
+}
+@keyframes splash-auto-hide {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
