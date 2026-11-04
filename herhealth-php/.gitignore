@@ -1,0 +1,7 @@
+.env
+/storage/*.log
+/public/uploads/audio/*
+!/public/uploads/audio/.gitkeep
+/storage/backups/
+.DS_Store
+Thumbs.db
