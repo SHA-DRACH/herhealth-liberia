@@ -67,5 +67,7 @@
     "article.tapPlay": "Press it to listen",
     "ask.tapTalk": "Press the microphone and ask your question",
     "ask.typeInstead": "Type it instead",
-    "ask.again": "Ask another question"
+    "ask.again": "Ask another question",
+    "voice.noSpeech": "I never hear anything. Press the microphone and talk again.",
+    "voice.network": "Voice need network. Type your question instead."
 }

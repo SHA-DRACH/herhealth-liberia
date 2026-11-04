@@ -215,25 +215,43 @@
 
   // ---------- speech recognition helper ----------
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  function listen(btn, statusEl, onText, labels) {
-    if (!SR) return false;
-    const rec = new SR();
-    rec.lang = "en-US"; rec.interimResults = true; rec.maxAlternatives = 1;
-    let on = false, finalText = "";
-    rec.onresult = (ev) => {
-      const text = [...ev.results].map((r) => r[0].transcript).join(" ");
-      statusEl.textContent = "“" + text + "”";
-      if (ev.results[ev.results.length - 1].isFinal) { finalText = text; rec.stop(); }
-    };
-    rec.onend = () => { on = false; btn.classList.remove("is-listening"); btn.setAttribute("aria-pressed", "false"); if (finalText) onText(finalText); else statusEl.textContent = ""; };
-    rec.onerror = () => { statusEl.textContent = labels.unsupported; };
+  /**
+   * Tap-to-talk. Explains every failure in plain words (blocked microphone, no internet, nothing heard,
+   * not https, unsupported browser) and keeps whatever was heard even if the browser never marked it final.
+   * Returns false when voice cannot work here, so the caller can fall back to typing.
+   */
+  function listen(btn, statusEl, onText, msg) {
+    const fail = (key) => { statusEl.textContent = msg[key] || msg.unsupported || ""; };
+    if (!window.isSecureContext) { btn.addEventListener("click", (e) => { e.preventDefault(); fail("insecure"); }); return false; }
+    if (!SR) { btn.addEventListener("click", (e) => { e.preventDefault(); fail("unsupported"); }); return false; }
+    let rec = null, on = false, heard = "", errored = false;
+    const reset = () => { on = false; btn.classList.remove("is-listening"); btn.setAttribute("aria-pressed", "false"); };
     btn.addEventListener("click", (e) => {
       e.preventDefault();
-      if (on) { rec.stop(); return; }
+      if (on && rec) { rec.stop(); return; }
       try { speechSynthesis.cancel(); } catch {}
-      finalText = ""; on = true; btn.classList.add("is-listening"); btn.setAttribute("aria-pressed", "true");
-      statusEl.textContent = labels.listening;
-      try { rec.start(); } catch { on = false; }
+      rec = new SR();                       // a fresh recognizer each time is more reliable on Chrome/Android
+      rec.lang = "en-US"; rec.interimResults = true; rec.maxAlternatives = 1; rec.continuous = false;
+      heard = ""; errored = false;
+      rec.onresult = (ev) => {
+        heard = [...ev.results].map((r) => r[0].transcript).join(" ").trim();
+        statusEl.textContent = "“" + heard + "”";
+        if (ev.results[ev.results.length - 1].isFinal) rec.stop();
+      };
+      rec.onerror = (ev) => {
+        errored = true;
+        const map = { "not-allowed": "notAllowed", "service-not-allowed": "notAllowed", network: "network", "no-speech": "noSpeech", "audio-capture": "audio", aborted: "" };
+        const key = map[ev.error] ?? "unsupported";
+        if (key) fail(key); else statusEl.textContent = "";
+      };
+      rec.onend = () => {
+        reset();
+        if (heard.length >= 3) onText(heard);
+        else if (!errored) fail("noSpeech");
+      };
+      on = true; btn.classList.add("is-listening"); btn.setAttribute("aria-pressed", "true");
+      statusEl.textContent = msg.listening || "🎙 …";
+      try { rec.start(); } catch { reset(); fail("unsupported"); }
     });
     return true;
   }
@@ -241,8 +259,9 @@
   // ---------- home: tap the big microphone and talk ----------
   const homeMic = $("#homeMic");
   if (homeMic && homeMic.dataset.voice === "1") {
-    listen(homeMic, $("#homeMicStatus"), (text) => location.assign(url("ask") + "?v=1&q=" + encodeURIComponent(text)),
-      { listening: "🎙 …", unsupported: "" });
+    let msgs = {};
+    try { msgs = JSON.parse(homeMic.dataset.msgs || "{}"); } catch {}
+    listen(homeMic, $("#homeMicStatus"), (text) => location.assign(url("ask") + "?v=1&q=" + encodeURIComponent(text)), msgs);
   }
 
   // ---------- Ask HerHealth ----------
@@ -333,8 +352,9 @@
   // Voice input — the big microphone.
   const mic = $("#micBtn"), micStatus = $("#micStatus");
   if (mic && !listen(mic, micStatus, (text) => { q.value = text; grow(); inputMode = "VOICE"; form.requestSubmit(); },
-      { listening: T["ask.listening"], unsupported: T["ask.voiceUnsupported"] })) {
-    mic.addEventListener("click", () => { micStatus.textContent = T["ask.voiceUnsupported"]; q.focus(); });
+      { listening: T["ask.listening"], unsupported: T["voice.unsupported"], notAllowed: T["voice.notAllowed"], network: T["voice.network"],
+        noSpeech: T["voice.noSpeech"], insecure: T["voice.insecure"], audio: T["voice.audio"] })) {
+    mic.addEventListener("click", () => q.focus());   // voice not possible here: move straight to typing
   }
 
   // Arriving from the home microphone (?q=…&v=1): ask straight away, then remove the question from the address bar.

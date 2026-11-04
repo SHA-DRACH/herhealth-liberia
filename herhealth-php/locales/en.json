@@ -159,5 +159,11 @@
     "ask.tapTalk": "Tap the microphone and ask your question",
     "ask.typeInstead": "Type instead",
     "ask.answerTitle": "HerHealth answer",
-    "ask.again": "Ask another question"
+    "ask.again": "Ask another question",
+    "voice.notAllowed": "Microphone is blocked. Tap the lock icon in the address bar, allow the microphone, then try again.",
+    "voice.network": "Voice needs an internet connection. Please type your question instead.",
+    "voice.noSpeech": "I did not hear anything. Tap the microphone and talk again.",
+    "voice.insecure": "Voice only works on a secure (https) address. Please type your question.",
+    "voice.unsupported": "Voice is not available in this browser. Use Chrome or Edge, or type your question.",
+    "voice.audio": "No microphone was found on this device. Please type your question."
 }

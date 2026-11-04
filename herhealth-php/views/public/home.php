@@ -4,7 +4,7 @@
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>
   </button>
 
-  <a class="mic-big" id="homeMic" href="<?= e(base_url('ask')) ?>" data-voice="<?= $voice ? '1' : '0' ?>" aria-describedby="talkSub" data-aos="zoom-in">
+  <a class="mic-big" id="homeMic" href="<?= e(base_url('ask')) ?>" data-voice="<?= $voice ? '1' : '0' ?>" data-msgs="<?= e(json_encode(['notAllowed' => t('voice.notAllowed'), 'network' => t('voice.network'), 'noSpeech' => t('voice.noSpeech'), 'insecure' => t('voice.insecure'), 'unsupported' => t('voice.unsupported'), 'audio' => t('voice.audio'), 'listening' => t('home.listening')], JSON_UNESCAPED_UNICODE)) ?>" aria-describedby="talkSub" data-aos="zoom-in">
     <span class="mic-ring" aria-hidden="true"></span>
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3z"/><path d="M19 11a7 7 0 0 1-14 0M12 18v3"/></svg>
     <span class="sr-only"><?= e(t('home.tapTalk')) ?></span>
