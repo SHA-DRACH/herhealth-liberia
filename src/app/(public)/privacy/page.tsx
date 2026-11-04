@@ -53,6 +53,18 @@ export default function PrivacyPage() {
         </ul>
       </section>
 
+      <section id="retention" className="card space-y-2 p-5">
+        <h2 className="font-bold">How long we keep data</h2>
+        <ul className="list-disc space-y-1 pl-5">
+          <li>Anonymous analytics events: 24 months.</li>
+          <li>Ask HerHealth metadata (topic and safety level — never your words): 24 months.</li>
+          <li>Feedback comments: 12 months.</li>
+          <li>Administrative audit logs: 24 months, for security.</li>
+          <li>Encrypted rotating backups: about 30 days.</li>
+          <li>The text of your questions: never stored.</li>
+        </ul>
+      </section>
+
       {contact && (
         <p>
           Questions about privacy: <a className="underline" href={`mailto:${contact}`}>{contact}</a>

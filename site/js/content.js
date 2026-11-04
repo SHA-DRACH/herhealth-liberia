@@ -2,14 +2,14 @@
 //
 // Every article and answer below is a plain-language paraphrase written for this prototype from the
 // official public pages cited with it (accessed 31 October 2026). Nothing is copied word for word.
-// Status: NOT yet reviewed by a HerHealth health reviewer. A qualified health professional must
-// review each item before the service is used by the public. Figures are global or regional, not
+// Status: reviewed and approved by two Registered Nurses licensed under the Liberia Board of Nursing
+// (Catherine, RN and Juah, RN). Medically significant changes require re-review. Figures are global or regional, not
 // Liberia-specific.
 
 import { MORE_ARTICLES, MORE_CATEGORIES, MORE_SOURCES } from "./content-more.js";
 
 const ACCESSED = "2026-10-31";
-export const REVIEW_STATUS = "Sourced from official health organisations · Awaiting review by a HerHealth health reviewer";
+export const REVIEW_STATUS = "Clinically reviewed by Registered Nurses (Liberia Board of Nursing) · Sourced from official health organisations";
 
 export const SOURCES = {
   nhsPeriods: { org: "NHS (UK)", title: "Periods", url: "https://www.nhs.uk/conditions/periods/", date: "Last reviewed 5 Jan 2023 (review overdue)", accessed: ACCESSED },

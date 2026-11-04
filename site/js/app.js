@@ -23,11 +23,9 @@ const store = {
     } catch {}
   },
 };
-/** The AI assistant model. Shown on Ask, About and Evidence so reviewers know exactly what powers answers. */
-const AI_MODEL = { name: "Claude Opus 5.5", maker: "Anthropic", id: "claude-opus-5-5" };
 const assistantCard = `<section class="card ai-card stack small">
-  <div class="ai-head"><span class="ai-badge" aria-hidden="true">✦</span><div><strong>HerHealth Assistant</strong><br><span class="muted">AI model: ${AI_MODEL.name} by ${AI_MODEL.maker} (<code>${AI_MODEL.id}</code>)</span></div></div>
-  <p><strong>Full system:</strong> ${AI_MODEL.name} rewrites medically reviewed HerHealth answers in plain language and double-checks the safety level. It never answers from general knowledge, never diagnoses and never prescribes.</p>
+  <div class="ai-head"><span class="ai-badge" aria-hidden="true">✦</span><div><strong>HerHealth Assistant</strong><br><span class="muted">Provider-independent AI layer · answers only from approved content</span></div></div>
+  <p><strong>Full system:</strong> an approved language model may only rephrase clinically reviewed HerHealth answers in plain language and double-checks the safety level. It never answers from general knowledge, never diagnoses and never prescribes.</p>
   <p><strong>This public preview:</strong> no AI model is connected (that would expose a secret key). Answers are matched from the HerHealth library on your phone, so the wording is exactly as written from WHO, NHS and UNICEF guidance.</p>
 </section>`;
 
@@ -102,7 +100,7 @@ const views = {
           .join("")}</section>
         <div class="stack"><a class="btn btn-teal" href="#/help">📍 Find a health service</a><a class="btn btn-secondary" href="#/ask">💬 Ask HerHealth about this</a></div>
         <section class="sources"><h2 style="color:var(--ink);font-size:1rem">Sources</h2><ul>${a.sources.map(sourceLine).join("")}</ul>
-          <p>Written in plain language for this prototype from the sources above. Not copied. Awaiting review by a qualified HerHealth health reviewer.</p></section>
+          <p>Written in plain language for this prototype from the sources above. Not copied. Clinically reviewed by Registered Nurses licensed under the Liberia Board of Nursing. Citing a source does not imply its endorsement.</p></section>
         ${thumbs(`article:${a.slug}`, "Was this helpful?")}
         ${footer}
       </article>`;
@@ -145,8 +143,11 @@ const views = {
 
   about() {
     return `<div class="reading stack"><h1>About &amp; privacy</h1>
-      <section class="card stack"><h2>This is a prototype preview</h2>
-        <p>HerHealth Liberia is being developed by SkillBridge Liberia Corporation. This preview shows how the service works. Its health information is written in plain language from World Health Organization (WHO) and NHS guidance, with each source shown. It has <strong>not yet been reviewed</strong> by a HerHealth health reviewer and must not replace advice from a qualified health worker.</p></section>
+      <section class="card stack"><h2>Functional MVP 0.1 — preview</h2>
+        <p>HerHealth Liberia is developed and maintained by SkillBridge Liberia Corporation. Its health information is written in plain language from World Health Organization (WHO), UNICEF and NHS guidance, with each source shown.</p></section>
+      <section class="card stack"><h2>Clinically Reviewed Health Information</h2>
+        <p>HerHealth Liberia&#39;s reproductive and maternal health information has been reviewed and approved by Registered Nurses licensed under the Liberia Board of Nursing, including professionals with experience in emergency nursing and gender-focused programming.</p>
+        <p>Clinical review supports the accuracy, clarity and safety of the health information provided through the platform. HerHealth provides educational health information and does not replace diagnosis, treatment or consultation with a qualified healthcare professional.</p></section>
       <section class="card stack"><h2>Your privacy</h2>
         <ul><li>No name, phone number, email or account is needed.</li><li>Questions you type in Ask HerHealth are answered on your phone and are never sent or saved.</li>
         <li>This preview collects no analytics and uses no trackers.</li><li>Only your text-size setting, ratings and saved articles are kept on this phone.</li></ul>
@@ -166,7 +167,7 @@ const views = {
         <tr><th scope="row">Questions answered in the library</th><td><strong>${LIBRARY.length}</strong></td><td class="muted">AI utilization</td></tr>
         <tr><th scope="row">Topics covered</th><td><strong>${CATEGORIES.filter((c) => articlesIn(c.slug).length).length}/${CATEGORIES.length}</strong></td><td class="muted">Coverage</td></tr>
         <tr><th scope="row">Official sources cited</th><td><strong>${Object.keys(SOURCES).length}</strong></td><td class="muted">Evidence base</td></tr>
-        <tr><th scope="row">AI assistant model</th><td><strong>${AI_MODEL.name}</strong><br><span class="small muted">${AI_MODEL.maker} · full system only</span></td><td class="muted">AI-assisted answers</td></tr>
+        <tr><th scope="row">AI layer</th><td><strong>Provider-independent</strong><br><span class="small muted">approved LLM providers · full system only</span></td><td class="muted">AI-assisted answers</td></tr>
         <tr><th scope="row">Languages available</th><td><strong>1</strong></td><td class="muted">Localization</td></tr>
         <tr><th scope="row">Safety tests passed</th><td id="safety-score"><strong>running…</strong></td><td class="muted">AI safety</td></tr>
       </tbody></table></div>
@@ -211,7 +212,7 @@ const PATHWAY_HTML = {
     const related = r.related.length
       ? `<section class="card stack small"><strong>Related questions</strong>${r.related.map((x) => `<button class="suggestion" style="background:none;padding:0;color:var(--plum-700);text-align:left;min-height:36px" data-suggest="${esc(x.q)}">${esc(x.q)}</button>`).join("")}</section>`
       : "";
-    return `<div class="card stack answer"><h2>HerHealth</h2><p>${esc(b.a)}</p>${amber}<p class="small muted">✦ HerHealth Assistant · matched from the HerHealth library (preview — ${AI_MODEL.name} is used in the full system)</p><span class="review-badge">${esc(REVIEW_STATUS)}</span></div>
+    return `<div class="card stack answer"><h2>HerHealth</h2><p>${esc(b.a)}</p>${amber}<p class="small muted">✦ HerHealth Assistant · matched from the HerHealth library (preview — no AI model connected)</p><span class="review-badge">${esc(REVIEW_STATUS)}</span></div>
       <div class="card warning"><h3>⚠ Seek professional care if…</h3>${list(b.whenToGetHelp)}</div>
       <div class="card small"><strong>Source:</strong> <a href="#/article/${b.article}">${esc(b.articleTitle)}</a> — ${b.sources.map((k) => `${esc(SOURCES[k].org)}, <a href="${esc(SOURCES[k].url)}" target="_blank" rel="noopener noreferrer">${esc(SOURCES[k].title)}</a>`).join("; ")}</div>
       ${related}<a class="btn btn-teal" href="#/help">📍 Find nearest listed health service</a>${thumbs(`answer:${b.id}`, "Was this useful?")}${footer}`;

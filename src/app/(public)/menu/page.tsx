@@ -40,6 +40,9 @@ export default async function MenuPage() {
         <Link className="tap flex items-center px-4" href="/impact">
           {t("menu.impact")}
         </Link>
+        <Link className="tap flex items-center px-4" href="/about">
+          About &amp; clinical review
+        </Link>
       </nav>
       <p className="text-center text-sm text-muted">{t("app.developedBy")}</p>
     </div>

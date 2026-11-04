@@ -553,3 +553,79 @@ export async function setNativeNameAction(form: FormData) {
     return { entity: "language", id: code };
   });
 }
+
+// ---------- clinical review register (§3–4) ----------
+
+const CLINICAL_DECISIONS = ["PENDING", "CHANGES_REQUIRED", "APPROVED", "SUPERSEDED"] as const;
+
+export async function saveClinicalReviewAction(form: FormData) {
+  const existing = num(form, "id");
+  await act("clinical.manage", "/admin/clinical-reviews", existing ? "clinical_review_updated" : "clinical_review_created", async () => {
+    const name = str(form, "reviewer_full_name");
+    const qualification = str(form, "professional_qualification");
+    const authority = str(form, "regulatory_authority");
+    const decision = str(form, "decision");
+    const reviewDate = str(form, "review_date");
+    if (!name || !qualification || !authority) throw new Error("Reviewer name, qualification and regulatory authority are required");
+    if (!CLINICAL_DECISIONS.includes(decision as never)) throw new Error("Choose a decision");
+    if (reviewDate && !/^\d{4}-\d{2}-\d{2}$/.test(reviewDate)) throw new Error("Review date must be a date");
+    const values = [
+      name,
+      str(form, "public_display_name") || null,
+      qualification,
+      authority,
+      str(form, "license_number") || null,
+      form.get("license_public_consent") === "on",
+      str(form, "organization_position") || null,
+      str(form, "years_experience") || null,
+      str(form, "content_version_reviewed") || null,
+      str(form, "scope_of_review") || null,
+      reviewDate || null,
+      decision,
+      str(form, "comments") || null,
+      str(form, "approval_reference") || null,
+    ];
+    const db = await getDb();
+    if (existing) {
+      await db.query(
+        `UPDATE clinical_reviews SET reviewer_full_name=$1, public_display_name=$2, professional_qualification=$3, regulatory_authority=$4,
+           license_number=$5, license_public_consent=$6, organization_position=$7, years_experience=$8, content_version_reviewed=$9,
+           scope_of_review=$10, review_date=$11, decision=$12, comments=$13, approval_reference=$14, updated_at=now() WHERE id=$15`,
+        [...values, existing],
+      );
+      return { entity: "clinical_review", id: existing, details: { decision } };
+    }
+    const [r] = await db.query<{ id: number }>(
+      `INSERT INTO clinical_reviews (reviewer_full_name, public_display_name, professional_qualification, regulatory_authority, license_number,
+         license_public_consent, organization_position, years_experience, content_version_reviewed, scope_of_review, review_date, decision,
+         comments, approval_reference) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING id`,
+      values,
+    );
+    return { entity: "clinical_review", id: r.id, details: { decision } };
+  });
+}
+
+export async function deleteClinicalReviewAction(form: FormData) {
+  const id = Number(str(form, "id"));
+  await act("clinical.manage", "/admin/clinical-reviews", "clinical_review_deleted", async () => {
+    await (await getDb()).query(`DELETE FROM clinical_reviews WHERE id = $1`, [id]);
+    return { entity: "clinical_review", id };
+  });
+}
+
+/** Associates every published, medically approved article (current version) with an APPROVED review record. */
+export async function linkClinicalReviewAction(form: FormData) {
+  const id = Number(str(form, "id"));
+  await act("clinical.manage", "/admin/clinical-reviews", "clinical_review_linked", async () => {
+    const db = await getDb();
+    const [rec] = await db.query<{ decision: string }>(`SELECT decision FROM clinical_reviews WHERE id = $1`, [id]);
+    if (rec?.decision !== "APPROVED") throw new Error("Only an APPROVED review record can be linked to content");
+    const rows = await db.query<{ n: number }>(
+      `WITH ins AS (INSERT INTO article_clinical_reviews (article_id, clinical_review_id, article_version)
+         SELECT a.id, $1, a.version FROM articles a WHERE a.status = 'PUBLISHED' AND a.medical_review_status = 'APPROVED'
+         ON CONFLICT DO NOTHING RETURNING 1) SELECT count(*)::int AS n FROM ins`,
+      [id],
+    );
+    return { entity: "clinical_review", id, details: { linked: rows[0]?.n ?? 0 } };
+  });
+}

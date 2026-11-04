@@ -31,6 +31,8 @@ const CAPABILITIES = {
   "translation.review": ["LANGUAGE_REVIEWER"],
   "audio.manage": ["SUPER_ADMIN", "PRODUCT_ADMIN", "TRANSLATOR"],
   "sources.manage": ["SUPER_ADMIN", "PRODUCT_ADMIN", "HEALTH_REVIEWER"],
+  "clinical.view": ["SUPER_ADMIN", "PRODUCT_ADMIN", "HEALTH_REVIEWER", "RESEARCH_MEAL"],
+  "clinical.manage": ["SUPER_ADMIN", "HEALTH_REVIEWER"],
   "facilities.manage": ["SUPER_ADMIN", "PRODUCT_ADMIN"],
   "safety.review": ["HEALTH_REVIEWER"],
   "safety.edit_messages": ["SUPER_ADMIN", "PRODUCT_ADMIN", "HEALTH_REVIEWER"],
