@@ -36,7 +36,7 @@ function public_dispatch(string $path): void
         case $path === '/listen':
             $rows = Db::all("SELECT au.*, a.slug, a.title AS article_title FROM audio_lessons au JOIN articles a ON a.id = au.article_id
                 WHERE au.status = 'PUBLISHED' AND a.content_status = 'PUBLISHED' AND a.clinical_review_status = 'APPROVED' ORDER BY a.id");
-            render('public/listen', ['nav' => 'learn', 'lessons' => $rows]);
+            render('public/listen', ['nav' => 'listen', 'lessons' => $rows]);
             return;
 
         case $path === '/ask':

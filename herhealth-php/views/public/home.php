@@ -1,39 +1,42 @@
-<?php $h = (int) date('G'); $greet = $h < 12 ? t('home.morning') : ($h < 17 ? t('home.afternoon') : t('home.evening')); ?>
-<section class="hero" data-aos="fade-up">
-  <p class="eyebrow"><?= e($greet) ?> 👋</p>
-  <h1><?= e(t('home.title')) ?></h1>
-  <p class="reviewed-pill"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z"/><path d="m9 12 2 2 4-4"/></svg><?= e(t('home.reviewed')) ?></p>
+<?php $voice = Db::setting('voice_input_enabled', '1') === '1'; ?>
+<section class="voice-hero" aria-labelledby="talkTitle">
+  <button type="button" class="hear-btn js-say" data-say="<?= e(t('home.instructions')) ?>" aria-label="<?= e(t('home.hear')) ?>">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>
+  </button>
+
+  <a class="mic-big" id="homeMic" href="<?= e(base_url('ask')) ?>" data-voice="<?= $voice ? '1' : '0' ?>" aria-describedby="talkSub" data-aos="zoom-in">
+    <span class="mic-ring" aria-hidden="true"></span>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3z"/><path d="M19 11a7 7 0 0 1-14 0M12 18v3"/></svg>
+    <span class="sr-only"><?= e(t('home.tapTalk')) ?></span>
+  </a>
+  <h1 id="talkTitle" class="voice-title"><?= e(t('home.tapTalk')) ?></h1>
+  <p id="talkSub" class="voice-sub"><?= e(t('home.tapTalkSub')) ?></p>
+  <p class="voice-status" id="homeMicStatus" role="status" aria-live="polite"></p>
+  <a class="type-link" href="<?= e(base_url('ask#type')) ?>">⌨ <?= e(t('home.orType')) ?></a>
 </section>
 
-<section class="action-grid" aria-label="Quick actions">
-  <a class="action action-ask" href="<?= e(base_url('ask')) ?>" data-aos="fade-up" data-aos-delay="50">
-    <span class="action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3z"/><path d="M19 11a7 7 0 0 1-14 0M12 18v3"/></svg></span>
-    <span><strong><?= e(t('home.askCta')) ?></strong><small><?= e(t('home.askSub')) ?></small></span>
+<section class="big3" aria-label="Quick actions">
+  <a class="big3-btn b-listen" href="<?= e(base_url('listen')) ?>" data-aos="fade-up">
+    <span class="big3-ic">🎧</span><span><?= e(t('home.listen')) ?></span>
   </a>
-  <a class="action action-listen" href="<?= e(base_url('listen')) ?>" data-aos="fade-up" data-aos-delay="100">
-    <span class="action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="3" y="14" width="4" height="7" rx="1.5"/><rect x="17" y="14" width="4" height="7" rx="1.5"/></svg></span>
-    <span><strong><?= e(t('home.listenCta')) ?></strong><small><?= e(t('home.listenSub')) ?></small></span>
+  <a class="big3-btn b-help" href="<?= e(base_url('help')) ?>" data-aos="fade-up" data-aos-delay="60">
+    <span class="big3-ic">📍</span><span><?= e(t('home.help')) ?></span>
   </a>
-  <a class="action action-help" href="<?= e(base_url('help')) ?>" data-aos="fade-up" data-aos-delay="150">
-    <span class="action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
-    <span><strong><?= e(t('home.helpCta')) ?></strong><small><?= e(t('home.helpSub')) ?></small></span>
+  <a class="big3-btn b-urgent" href="<?= e(base_url('emergency')) ?>" data-aos="fade-up" data-aos-delay="120">
+    <span class="big3-ic">🆘</span><span><?= e(t('home.urgent')) ?></span>
   </a>
 </section>
 
 <section aria-labelledby="topicsTitle">
-  <h2 id="topicsTitle" class="section-title"><?= e(t('learn.title')) ?></h2>
-  <div class="topic-grid">
+  <h2 id="topicsTitle" class="sec-title"><?= e(t('home.topics')) ?></h2>
+  <div class="tiles">
     <?php foreach ($categories as $i => $c): if (!$c['article_count']) continue; ?>
-      <a class="topic" href="<?= e(base_url('learn/' . $c['slug'])) ?>" data-aos="zoom-in" data-aos-delay="<?= min(300, $i * 40) ?>">
-        <span class="topic-emoji" aria-hidden="true"><?= e($c['icon']) ?></span>
-        <span class="topic-name"><?= e($c['name']) ?></span>
-        <span class="topic-count"><?= (int) $c['article_count'] ?> <?= e(t('learn.articles')) ?></span>
+      <a class="tile" href="<?= e(base_url('learn/' . $c['slug'])) ?>" data-aos="zoom-in" data-aos-delay="<?= min(240, $i * 30) ?>">
+        <span class="tile-ic" aria-hidden="true"><?= e($c['icon']) ?></span>
+        <span class="tile-l"><?= e($c['name']) ?></span>
       </a>
     <?php endforeach; ?>
   </div>
 </section>
 
-<a class="emergency-strip" href="<?= e(base_url('emergency')) ?>" data-aos="fade-up">
-  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01"/></svg>
-  <span><?= e(t('emergency.title')) ?></span>
-</a>
+<p class="trust">🛡️ <?= e(t('home.reviewed')) ?></p>

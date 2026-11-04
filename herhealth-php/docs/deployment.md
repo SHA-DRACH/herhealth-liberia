@@ -22,3 +22,7 @@ XAMPP's MariaDB is started on port 3307 (so it does not clash with the MySQL 8 s
 C:/xampp/mysql/bin/mysqld.exe --defaults-file=C:/xampp/mysql/bin/my.ini --port=3307
 C:/xampp/php/php.exe -S 127.0.0.1:8080 -t public public/index.php
 ```
+
+## XAMPP (Apache) on this PC
+
+The project lives in `C:\xampp\htdocs\herhealth`. Open **http://localhost/herhealth/** (redirects to the PHP app) and the admin at **http://localhost/herhealth/herhealth-php/admin**. `.htaccess` files serve only `herhealth-php/public/`; `.env`, app code and the Next.js sources are not reachable from the browser. `.env` has `APP_BASE_PATH=/herhealth/herhealth-php`. phpMyAdmin (http://localhost/phpmyadmin) is set to MariaDB on port 3307.

@@ -205,62 +205,113 @@
     $("#clearDone").hidden = false;
   });
 
+  // ---------- read-aloud buttons (voice-first help) ----------
+  $$(".js-say").forEach((b) => b.addEventListener("click", () => {
+    if (!("speechSynthesis" in window)) return;
+    if (b.classList.contains("is-speaking")) { speechSynthesis.cancel(); b.classList.remove("is-speaking"); return; }
+    b.classList.add("is-speaking");
+    speakText(b.dataset.say, () => b.classList.remove("is-speaking"));
+  }));
+
+  // ---------- speech recognition helper ----------
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  function listen(btn, statusEl, onText, labels) {
+    if (!SR) return false;
+    const rec = new SR();
+    rec.lang = "en-US"; rec.interimResults = true; rec.maxAlternatives = 1;
+    let on = false, finalText = "";
+    rec.onresult = (ev) => {
+      const text = [...ev.results].map((r) => r[0].transcript).join(" ");
+      statusEl.textContent = "“" + text + "”";
+      if (ev.results[ev.results.length - 1].isFinal) { finalText = text; rec.stop(); }
+    };
+    rec.onend = () => { on = false; btn.classList.remove("is-listening"); btn.setAttribute("aria-pressed", "false"); if (finalText) onText(finalText); else statusEl.textContent = ""; };
+    rec.onerror = () => { statusEl.textContent = labels.unsupported; };
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (on) { rec.stop(); return; }
+      try { speechSynthesis.cancel(); } catch {}
+      finalText = ""; on = true; btn.classList.add("is-listening"); btn.setAttribute("aria-pressed", "true");
+      statusEl.textContent = labels.listening;
+      try { rec.start(); } catch { on = false; }
+    });
+    return true;
+  }
+
+  // ---------- home: tap the big microphone and talk ----------
+  const homeMic = $("#homeMic");
+  if (homeMic && homeMic.dataset.voice === "1") {
+    listen(homeMic, $("#homeMicStatus"), (text) => location.assign(url("ask") + "?v=1&q=" + encodeURIComponent(text)),
+      { listening: "🎙 …", unsupported: "" });
+  }
+
   // ---------- Ask HerHealth ----------
   const form = $("#askForm");
   if (!form) return;
   const T = JSON.parse($("#askI18n").textContent);
   const q = $("#question"), out = $("#answer"), askBtn = $("#askBtn");
   let inputMode = "TEXT";
+  const grow = () => { q.style.height = "auto"; q.style.height = Math.min(160, q.scrollHeight) + "px"; };
+  q.addEventListener("input", () => { inputMode = "TEXT"; grow(); });
+  q.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } });
   $$(".js-suggest").forEach((b) => b.addEventListener("click", () => { q.value = b.textContent; inputMode = "TEXT"; form.requestSubmit(); }));
-  q.addEventListener("input", () => (inputMode = "TEXT"));
 
-  const links = (...pairs) => el("div", { class: "btn-row" }, pairs.map(([href, label, cls]) => el("a", { class: "btn " + (cls || "btn-ghost"), href: url(href), text: label })));
+  const speakIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>';
+  const pills = (...pairs) => el("div", { class: "pill-row" }, pairs.map(([href, label, cls]) => el("a", { class: "pill " + (cls || ""), href: url(href), text: label })));
 
-  function render(r, question) {
+  function render(r, question, spokenInput) {
     out.replaceChildren();
-    const cls = { EMERGENCY: "pathway-red", PROTECTION: "pathway-protection", MENTAL_HEALTH_CRISIS: "pathway-crisis" }[r.pathway] || "pathway-info";
-    const card = el("div", { class: "card " + cls, role: ["EMERGENCY", "MENTAL_HEALTH_CRISIS"].includes(r.pathway) ? "alert" : "region" });
+    const kind = { EMERGENCY: ["a-red", "🚨"], PROTECTION: ["a-protect", "🤝"], MENTAL_HEALTH_CRISIS: ["a-crisis", "💜"], MEDICATION: ["", "💊"],
+      OUT_OF_SCOPE: ["", "ℹ️"], FALLBACK: ["", "📖"], ANSWER: ["", "✅"] }[r.pathway] || ["", "ℹ️"];
+    const card = el("div", { class: "a-card " + kind[0], role: ["EMERGENCY", "MENTAL_HEALTH_CRISIS"].includes(r.pathway) ? "alert" : "region" });
     let spoken = "";
+    const head = (title) => el("div", { class: "a-head" }, el("span", { class: "a-badge", "aria-hidden": "true", text: kind[1] }), el("h2", { text: title }));
     if (r.pathway === "ANSWER") {
-      card.append(el("p", { class: "small muted", text: "“" + question + "”" }));
-      card.append(el("p", { class: "answer-text", text: r.answer }));
+      card.append(head(T["ask.answerTitle"]), el("p", { class: "a-q", text: "“" + question + "”" }), el("p", { class: "a-text", text: r.answer }));
       spoken = r.answer;
-      if (r.amberNote) card.append(el("p", { class: "note", text: r.amberNote }));
-      if (r.whenToGetHelp && r.whenToGetHelp.length) card.append(el("h3", { text: T["ask.seekCare"] }), el("ul", {}, r.whenToGetHelp.map((w) => el("li", { text: w }))));
-      const src = el("div", { class: "answer-source" },
-        el("p", {}, el("strong", { text: T["ask.fromLesson"] + ": " }), el("a", { href: url("article/" + r.article.slug), text: r.article.title })),
-        el("p", {}, el("strong", { text: T["ask.source"] + ": " }),
-          ...r.sources.map((s, i) => [i ? " · " : "", el("a", { href: s.url, target: "_blank", rel: "noopener noreferrer", text: s.organization + " — " + s.title })])),
-        el("p", { class: "small muted", text: T["article.sourceNote"] }));
-      card.append(src);
-      if (r.related && r.related.length) card.append(el("p", { class: "small" }, el("strong", { text: T["ask.related"] + ": " }),
-        ...r.related.map((x, i) => [i ? " · " : "", el("a", { href: url("article/" + x.slug), text: x.question })])));
-      card.append(links(["help", T["ask.findHelp"], "btn-teal"]));
-      const fb = el("div", { class: "feedback-inline" }, el("p", { class: "small" }, el("strong", { text: T["ask.useful"] })),
-        el("div", { class: "btn-row" }, el("button", { type: "button", class: "btn btn-ghost btn-sm js-useful", "data-useful": "YES", text: "👍 " + T["article.yes"] }),
-          el("button", { type: "button", class: "btn btn-ghost btn-sm js-useful", "data-useful": "NO", text: "👎 " + T["article.no"] })),
-        el("p", { class: "small thanks", hidden: "", text: T["article.thanks"] }));
+      if (r.amberNote) { card.append(el("p", { class: "note", text: "⚠️ " + r.amberNote })); spoken += " " + r.amberNote; }
+      if (r.whenToGetHelp && r.whenToGetHelp.length) card.append(el("div", { class: "warn-card" }, el("h3", { text: "⚠️ " + T["ask.seekCare"] }), el("ul", {}, r.whenToGetHelp.map((w) => el("li", { text: w })))));
+      card.append(el("div", { class: "a-src" },
+        el("p", {}, "📖 ", el("a", { href: url("article/" + r.article.slug), text: r.article.title })),
+        el("p", {}, "📚 ", ...r.sources.map((s, i) => [i ? " · " : "", el("a", { href: s.url, target: "_blank", rel: "noopener noreferrer", text: s.organization + " — " + s.title })])),
+        el("p", { class: "tiny", text: T["article.sourceNote"] })));
+      card.append(pills(["help", "📍 " + T["ask.findHelp"], "pill-teal"]));
+      const fb = el("div", { class: "feedback-inline thumbs" }, el("p", { text: T["ask.useful"] }),
+        el("div", { class: "thumb-row" }, el("button", { type: "button", class: "thumb js-useful", "data-useful": "YES", "aria-label": T["article.yes"], text: "👍" }),
+          el("button", { type: "button", class: "thumb js-useful", "data-useful": "NO", "aria-label": T["article.no"], text: "👎" })),
+        el("p", { class: "tiny thanks", hidden: "", text: T["article.thanks"] }));
       card.append(fb);
       wireUseful(fb, "ANSWER", r.article.slug);
     } else {
       const m = r.message || { title: "", body: [] };
-      card.append(el("h2", { text: (r.pathway === "EMERGENCY" ? "⚠ " : "") + m.title }));
+      card.append(head(m.title));
       m.body.forEach((p) => card.append(el("p", { text: p })));
       spoken = m.title + ". " + m.body.join(" ");
-      if (r.pathway === "EMERGENCY") card.append(links(["help?service=EMERGENCY", "📍 " + T["ask.findHelp"], "btn-danger"], ["emergency", T["ask.emergencyInfo"]]));
-      else if (r.pathway === "PROTECTION") card.append(links(["help?service=GBV_SUPPORT", T["ask.findHelp"], "btn-teal"], ["emergency", T["ask.emergencyInfo"]]));
-      else if (r.pathway === "MENTAL_HEALTH_CRISIS") card.append(links(["help", T["ask.findHelp"], "btn-primary"], ["emergency", T["ask.emergencyInfo"]]));
-      else if (r.pathway === "MEDICATION") card.append(links(["help", T["ask.findHelp"], "btn-teal"], ["learn", T["ask.searchTopics"]]));
-      else card.append(links(["learn", T["ask.searchTopics"], "btn-primary"], ["help", T["ask.findHelp"]]));
+      if (r.pathway === "EMERGENCY") card.append(pills(["help?service=EMERGENCY", "📍 " + T["ask.findHelp"], "pill-teal"], ["emergency", "🆘 " + T["ask.emergencyInfo"]]));
+      else if (r.pathway === "PROTECTION") card.append(pills(["help?service=GBV_SUPPORT", "📍 " + T["ask.findHelp"], "pill-teal"], ["emergency", "🆘 " + T["ask.emergencyInfo"]]));
+      else if (r.pathway === "MENTAL_HEALTH_CRISIS") card.append(pills(["help", "📍 " + T["ask.findHelp"], "pill-teal"], ["emergency", "🆘 " + T["ask.emergencyInfo"]]));
+      else if (r.pathway === "MEDICATION") card.append(pills(["help", "📍 " + T["ask.findHelp"], "pill-teal"], ["learn", "📖 " + T["ask.searchTopics"]]));
+      else card.append(pills(["learn", "📖 " + T["ask.searchTopics"], "pill-teal"], ["help", "📍 " + T["ask.findHelp"]]));
     }
     if ("speechSynthesis" in window && spoken) {
-      const rb = el("button", { type: "button", class: "btn btn-ghost btn-sm", text: "🔊 " + T["ask.readAloud"] });
-      rb.addEventListener("click", () => speakText(spoken));
-      card.append(rb);
+      const sb = el("button", { type: "button", class: "a-speak" });
+      sb.innerHTML = speakIcon; sb.append(T["ask.readAloud"]);
+      const stop = () => sb.classList.remove("is-speaking");
+      sb.addEventListener("click", () => {
+        if (sb.classList.contains("is-speaking")) { speechSynthesis.cancel(); stop(); return; }
+        sb.classList.add("is-speaking"); speakText(spoken, stop);
+      });
+      card.insertBefore(sb, card.children[r.pathway === "ANSWER" ? 3 : 1] || null);
+      // Someone who asked by voice hears the answer spoken back (they started it with their own tap).
+      if (spokenInput) { sb.classList.add("is-speaking"); speakText(spoken, stop); }
     }
-    card.append(el("p", { class: "small muted", text: T["app.disclaimer"] }));
+    card.append(el("p", { class: "tiny", text: T["app.disclaimer"] }));
     out.append(card);
-    out.focus();
+    const again = el("button", { type: "button", class: "pill a-again", text: "🎤 " + T["ask.again"] });
+    again.addEventListener("click", () => { out.replaceChildren(); q.value = ""; grow(); scrollTo({ top: 0, behavior: "smooth" }); });
+    out.append(again);
+    out.scrollIntoView({ behavior: "smooth", block: "start" });
+    out.focus({ preventScroll: true });
   }
 
   form.addEventListener("submit", async (e) => {
@@ -268,37 +319,30 @@
     const text = q.value.trim();
     if (text.length < 3) { q.focus(); return; }
     if (!navigator.onLine) { out.replaceChildren(el("p", { class: "card note", text: T["ask.offline"] })); return; }
+    const mode = inputMode;
     askBtn.disabled = true;
-    out.replaceChildren(el("div", { class: "card typing", "aria-label": "…" }, el("span"), el("span"), el("span")));
+    out.replaceChildren(el("div", { class: "a-card typing", "aria-label": "…" }, el("span"), el("span"), el("span")));
     try {
-      const r = await postJSON("api/ask", { question: text, lang: LANG, session, mode: inputMode });
-      render(r, text);
+      const r = await postJSON("api/ask", { question: text, lang: LANG, session, mode });
+      render(r, text, mode === "VOICE");
     } catch (err) {
       out.replaceChildren(el("p", { class: "card note", text: err.message && err.message !== "error" ? err.message : T["ask.error"] }));
     } finally { askBtn.disabled = false; }
   });
 
-  // Voice input — for users who prefer to speak (browser speech recognition).
+  // Voice input — the big microphone.
   const mic = $("#micBtn"), micStatus = $("#micStatus");
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (mic) {
-    if (!SR) { mic.addEventListener("click", () => (micStatus.textContent = T["ask.voiceUnsupported"])); }
-    else {
-      const rec = new SR();
-      rec.lang = "en-US"; rec.interimResults = true; rec.maxAlternatives = 1;
-      let listening = false;
-      rec.onresult = (ev) => {
-        q.value = [...ev.results].map((r) => r[0].transcript).join(" ");
-        inputMode = "VOICE";
-        if (ev.results[ev.results.length - 1].isFinal) { rec.stop(); form.requestSubmit(); }
-      };
-      rec.onend = () => { listening = false; mic.setAttribute("aria-pressed", "false"); micStatus.textContent = ""; };
-      rec.onerror = () => { micStatus.textContent = T["ask.voiceUnsupported"]; };
-      mic.addEventListener("click", () => {
-        if (listening) { rec.stop(); return; }
-        try { speechSynthesis.cancel(); } catch {}
-        q.value = ""; listening = true; mic.setAttribute("aria-pressed", "true"); micStatus.textContent = T["ask.listening"]; rec.start();
-      });
-    }
+  if (mic && !listen(mic, micStatus, (text) => { q.value = text; grow(); inputMode = "VOICE"; form.requestSubmit(); },
+      { listening: T["ask.listening"], unsupported: T["ask.voiceUnsupported"] })) {
+    mic.addEventListener("click", () => { micStatus.textContent = T["ask.voiceUnsupported"]; q.focus(); });
+  }
+
+  // Arriving from the home microphone (?q=…&v=1): ask straight away, then remove the question from the address bar.
+  const params = new URLSearchParams(location.search);
+  if (params.get("q")) {
+    q.value = params.get("q").slice(0, 500); grow();
+    inputMode = params.get("v") === "1" ? "VOICE" : "TEXT";
+    history.replaceState(null, "", location.pathname);
+    form.requestSubmit();
   }
 })();
