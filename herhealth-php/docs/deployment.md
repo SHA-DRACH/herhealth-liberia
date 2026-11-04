@@ -26,3 +26,5 @@ C:/xampp/php/php.exe -S 127.0.0.1:8080 -t public public/index.php
 ## XAMPP (Apache) on this PC
 
 The project lives in `C:\xampp\htdocs\herhealth`. Open **http://localhost/herhealth/** (redirects to the PHP app) and the admin at **http://localhost/herhealth/herhealth-php/admin**. `.htaccess` files serve only `herhealth-php/public/`; `.env`, app code and the Next.js sources are not reachable from the browser. `.env` has `APP_BASE_PATH=/herhealth/herhealth-php`. phpMyAdmin (http://localhost/phpmyadmin) is set to MariaDB on port 3307.
+
+**Starting the database:** XAMPP's MySQL (MariaDB) is configured for port 3307 in `C:\xampp\mysql\bin\my.ini` (backup: `my.ini.bak-herhealth`), because the separate MySQL80 Windows service uses 3306. Start it with the **Start** button next to *MySQL* in the XAMPP Control Panel. If the site shows a database error, MariaDB is not running.
