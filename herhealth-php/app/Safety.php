@@ -174,12 +174,33 @@ final class Retrieval
         $entries = [];
         $df = [];
         foreach ($rows as $r) {
+            $r['kind'] = 'qa';
             $e = ['item' => $r,
                 'q' => array_flip(self::keywords($r['question'])),
                 'strong' => array_flip(self::keywords(($r['tags'] ?? '') . ' ' . $r['article_title'])),
                 'weak' => array_flip(self::keywords($r['answer']))];
             foreach (array_keys($e['q'] + $e['strong'] + $e['weak']) as $w) $df[$w] = ($df[$w] ?? 0) + 1;
             $entries[] = $e;
+        }
+        // Full article text: every paragraph, key point and "when to get help" line of approved articles is
+        // also searchable, so spoken questions phrased differently from the Q&A still find reviewed content.
+        // These passages have no "question" field, so a matching Q&A pair always ranks above them.
+        $arts = Db::all("SELECT a.id AS article_id, a.slug, a.title AS article_title, a.summary, a.body, a.key_points, a.when_to_get_help,
+                a.version, c.slug AS category FROM articles a JOIN categories c ON c.id = a.category_id
+            WHERE a.clinical_review_status = 'APPROVED' AND a.content_status IN ('APPROVED','PUBLISHED')");
+        foreach ($arts as $a) {
+            $passages = paragraphs($a['body']);
+            if ($kp = lines($a['key_points'])) $passages[] = implode(' ', $kp);
+            if ($wh = lines($a['when_to_get_help'])) $passages[] = 'See a health worker if: ' . implode('; ', $wh) . '.';
+            $strong = array_flip(self::keywords($a['article_title'] . ' ' . $a['summary']));
+            foreach ($passages as $i => $p) {
+                $item = ['id' => 'p' . $a['article_id'] . '-' . $i, 'question' => $a['article_title'], 'tags' => null, 'answer' => $p,
+                    'article_id' => $a['article_id'], 'slug' => $a['slug'], 'article_title' => $a['article_title'],
+                    'when_to_get_help' => $a['when_to_get_help'], 'version' => $a['version'], 'category' => $a['category'], 'kind' => 'passage'];
+                $e = ['item' => $item, 'q' => [], 'strong' => $strong, 'weak' => array_flip(self::keywords($p))];
+                foreach (array_keys($e['strong'] + $e['weak']) as $w) $df[$w] = ($df[$w] ?? 0) + 1;
+                $entries[] = $e;
+            }
         }
         $n = max(1, count($entries));
         $max = 0.0;

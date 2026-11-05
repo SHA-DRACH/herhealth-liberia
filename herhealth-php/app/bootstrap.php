@@ -57,3 +57,4 @@ require __DIR__ . '/Ai.php';
 require __DIR__ . '/AskPipeline.php';
 require __DIR__ . '/Analytics.php';
 require __DIR__ . '/Content.php';
+require __DIR__ . '/WebSearch.php';

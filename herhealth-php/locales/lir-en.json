@@ -69,5 +69,7 @@
     "ask.typeInstead": "Type it instead",
     "ask.again": "Ask another question",
     "voice.noSpeech": "I never hear anything. Press the microphone and talk again.",
-    "voice.network": "Voice need network. Type your question instead."
+    "voice.network": "Voice need network. Type your question instead.",
+    "ask.webTitle": "From health websites we trust",
+    "ask.webNotice": "This answer come from health websites we trust. Our nurses never check it yet. Talk to health worker before you do anything."
 }

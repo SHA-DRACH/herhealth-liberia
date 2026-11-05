@@ -2,7 +2,7 @@
 $i18n = [];
 foreach (['ask.source', 'ask.fromLesson', 'ask.seekCare', 'ask.related', 'ask.useful', 'ask.findHelp', 'ask.emergencyInfo', 'ask.searchTopics',
     'ask.readAloud', 'ask.error', 'ask.offline', 'ask.listening', 'ask.voiceUnsupported', 'ask.speak', 'ask.again', 'ask.answerTitle', 'article.yes', 'article.no',
-    'article.thanks', 'app.disclaimer', 'article.sourceNote', 'home.stop', 'voice.notAllowed', 'voice.network', 'voice.noSpeech', 'voice.insecure', 'voice.unsupported', 'voice.audio'] as $k) $i18n[$k] = t($k);
+    'article.thanks', 'app.disclaimer', 'article.sourceNote', 'home.stop', 'voice.notAllowed', 'voice.network', 'voice.noSpeech', 'voice.insecure', 'voice.unsupported', 'voice.audio', 'ask.webTitle', 'ask.webNotice'] as $k) $i18n[$k] = t($k);
 ?>
 <script type="application/json" id="askI18n"><?= json_encode($i18n, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) ?></script>
 

@@ -165,5 +165,8 @@
     "voice.noSpeech": "I did not hear anything. Tap the microphone and talk again.",
     "voice.insecure": "Voice only works on a secure (https) address. Please type your question.",
     "voice.unsupported": "Voice is not available in this browser. Use Chrome or Edge, or type your question.",
-    "voice.audio": "No microphone was found on this device. Please type your question."
+    "voice.audio": "No microphone was found on this device. Please type your question.",
+    "ask.webTitle": "From trusted health websites",
+    "ask.webNotice": "This answer comes from trusted health websites. It has not been checked by HerHealth nurses. Talk to a health worker before acting on it.",
+    "ask.searchingWeb": "Searching trusted health websites…"
 }

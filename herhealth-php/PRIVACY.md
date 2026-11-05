@@ -31,6 +31,10 @@ These periods are the MVP retention schedule, to be formally confirmed by SkillB
 
 The microphone button uses the browser's built-in speech recognition, which may be provided by the phone or browser maker. HerHealth receives only the resulting text and does not store it. Users can always type instead. The setting `voice_input_enabled` can turn the button off.
 
+## Trusted-sites web answers
+
+When the reviewed library has no answer and `web_search_enabled` is on, the question — with names, phone numbers and e-mail addresses removed — is sent to the AI search provider (Anthropic web search, restricted to the allowlisted domains in Settings). HerHealth stores only metadata (pathway `WEB_ANSWER`, provider `web`), never the question. Answers are labelled "not reviewed by HerHealth nurses".
+
 ## User testing
 
 Participants are adults who gave informed consent. Only an anonymous participant ID is recorded — never a name.

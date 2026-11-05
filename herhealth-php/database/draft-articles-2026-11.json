@@ -1,0 +1,349 @@
+{
+  "_note": "Researched 5 November 2026 from the official pages listed with each article. Plain-language paraphrases written for HerHealth, not copied. STATUS: DRAFT — awaiting clinical review by HerHealth's registered nurses. Not public and not used by Ask HerHealth until approved.",
+  "categories": [
+    { "slug": "infections", "name": "Infections & Outbreaks", "icon": "🦠" }
+  ],
+  "sources": {
+    "whoPreterm": { "org": "World Health Organization", "title": "Preterm birth (fact sheet)", "url": "https://www.who.int/news-room/fact-sheets/detail/preterm-birth", "date": "10 May 2023" },
+    "unfpaFistula": { "org": "UNFPA", "title": "Obstetric fistula", "url": "https://www.unfpa.org/obstetric-fistula", "date": "Updated 25 Aug 2026" },
+    "whoLassa": { "org": "World Health Organization", "title": "Lassa fever (fact sheet)", "url": "https://www.who.int/news-room/fact-sheets/detail/lassa-fever", "date": "5 Dec 2024" },
+    "whoSyphilis": { "org": "World Health Organization", "title": "Syphilis (fact sheet)", "url": "https://www.who.int/news-room/fact-sheets/detail/syphilis", "date": "29 May 2025" },
+    "whoHepB": { "org": "World Health Organization", "title": "Hepatitis B (fact sheet)", "url": "https://www.who.int/news-room/fact-sheets/detail/hepatitis-b", "date": "28 Jul 2026" },
+    "whoEbola": { "org": "World Health Organization", "title": "Ebola disease (fact sheet)", "url": "https://www.who.int/news-room/fact-sheets/detail/ebola-disease", "date": "24 Apr 2025" },
+    "whoMpox": { "org": "World Health Organization", "title": "Mpox (fact sheet)", "url": "https://www.who.int/news-room/fact-sheets/detail/mpox", "date": "26 Aug 2024" },
+    "whoPerinatalMH": { "org": "World Health Organization", "title": "Perinatal mental health", "url": "https://www.who.int/teams/mental-health-and-substance-use/promotion-prevention/maternal-mental-health", "date": "Undated page" },
+    "whoDiet": { "org": "World Health Organization", "title": "Healthy diet (fact sheet)", "url": "https://www.who.int/news-room/fact-sheets/detail/healthy-diet", "date": "26 Jan 2026" },
+    "whoImmunization": { "org": "World Health Organization", "title": "Immunization coverage (fact sheet)", "url": "https://www.who.int/news-room/fact-sheets/detail/immunization-coverage", "date": "15 Jul 2026" },
+    "unicefChildMarriage": { "org": "UNICEF", "title": "Child marriage", "url": "https://www.unicef.org/protection/child-marriage", "date": "Jul 2023" },
+    "whoAfroLiberiaEmonc": { "org": "WHO Regional Office for Africa", "title": "Enhancing Liberia's Emergency Obstetric and Newborn Care (EmONC) to prevent maternal and newborn deaths", "url": "https://www.afro.who.int/countries/liberia/news/enhancing-liberias-emergency-obstetric-and-newborn-care-emonc-prevent-maternal-and-newborn-deaths", "date": "28 Mar 2025" }
+  },
+  "articles": [
+    {
+      "slug": "safe-childbirth-in-liberia",
+      "category": "pregnancy",
+      "title": "Safe childbirth in Liberia",
+      "summary": "Why giving birth at a health facility with a trained midwife or nurse saves the lives of mothers and babies in Liberia.",
+      "body": [
+        "Liberia has made progress in making childbirth safer. The number of mothers who die from pregnancy and birth fell from about 1,072 for every 100,000 babies born in 2013 to about 742 in 2020. But Liberia still has one of the highest rates of mothers dying in the region.",
+        "A midwife at JFK Medical Center in Monrovia says the main dangers she sees are heavy bleeding after birth and very high blood pressure in pregnancy (pre-eclampsia). Both can kill quickly, and both can be treated when a trained health worker is there in time.",
+        "This is why it matters to give birth at a health facility with a trained midwife or nurse. They can stop heavy bleeding, care for high blood pressure, help a baby who does not breathe at birth, and send you to a hospital quickly if you need more help.",
+        "The Ministry of Health and its partners are training more nurses and midwives in emergency care for mothers and newborns, including in Grand Cape Mount, Gbarpolu and Montserrado counties.",
+        "Plan ahead: go to all your antenatal visits, decide early which facility you will go to, and plan how you will get there and who will go with you, including at night."
+      ],
+      "keyPoints": [
+        "Give birth at a health facility with a trained midwife or nurse.",
+        "Heavy bleeding after birth and very high blood pressure are the main dangers, and both can be treated in time.",
+        "Plan your transport to the facility before labour starts."
+      ],
+      "whenToGetHelp": [
+        "Bleeding from the vagina during pregnancy or heavy bleeding after birth.",
+        "Severe headache, blurred vision or swelling of the face and hands.",
+        "Fits (convulsions) or fainting.",
+        "Labour that lasts many hours without the baby coming."
+      ],
+      "sources": ["whoAfroLiberiaEmonc", "whoPreterm"],
+      "faqs": [
+        { "q": "Why should I give birth at a health facility in Liberia?", "tags": "deliver hospital clinic midwife home birth safe childbirth Liberia", "a": "A trained midwife or nurse can stop heavy bleeding, treat very high blood pressure, help a baby breathe and send you to a hospital quickly if needed. These problems are the main causes of mothers dying in Liberia, and they can be treated when help is there in time." },
+        { "q": "What are the main dangers for mothers giving birth in Liberia?", "tags": "maternal death causes bleeding pre-eclampsia Liberia", "a": "A midwife at JFK Medical Center in Monrovia names heavy bleeding after birth and very high blood pressure in pregnancy are major causes of mothers dying. Go to the facility straight away if you have bleeding, a severe headache, blurred vision or fits." }
+      ]
+    },
+    {
+      "slug": "babies-born-too-early",
+      "category": "maternal-health",
+      "title": "Babies born too early",
+      "summary": "What it means when a baby comes before 37 weeks, how skin-to-skin care helps, and how antenatal care lowers the risk.",
+      "body": [
+        "A baby born alive before 37 weeks of pregnancy is called preterm, or born too early. More than 1 in 10 babies in the world are born too early, and most of them are born in sub-Saharan Africa and southern Asia.",
+        "Being born too early is the biggest cause of death in children under five. But most of these deaths can be prevented with simple care that does not cost much.",
+        "Skin-to-skin care, also called kangaroo mother care, means holding the baby against your bare chest, day and night. It keeps the baby warm, helps breastfeeding and helps small babies survive. Mother and baby should stay together from birth unless the baby is very sick.",
+        "Early breastfeeding, keeping the baby warm and help with breathing at the health facility also save many small babies.",
+        "Good antenatal care lowers the risk. WHO advises at least 8 antenatal contacts, starting before 12 weeks of pregnancy. The health worker can check for infections, high blood pressure and twins, and act quickly if labour starts too early."
+      ],
+      "keyPoints": [
+        "A baby born before 37 weeks is born too early.",
+        "Skin-to-skin care and early breastfeeding help small babies survive.",
+        "Start antenatal care early — before 12 weeks if you can."
+      ],
+      "whenToGetHelp": [
+        "Pains, tightening, bleeding or water leaking before 37 weeks of pregnancy.",
+        "A small baby who is cold, not feeding, breathing fast or with difficulty, or very sleepy."
+      ],
+      "sources": ["whoPreterm"],
+      "faqs": [
+        { "q": "What is kangaroo mother care?", "tags": "skin to skin small baby premature preterm warm", "a": "Kangaroo mother care means holding your baby skin-to-skin against your bare chest, day and night. It keeps a small baby warm, helps breastfeeding and helps babies born too early to survive." },
+        { "q": "What should I do if labour starts before 37 weeks?", "tags": "early labour premature preterm contractions pains water break", "a": "Go to a health facility straight away. There is care that can protect a baby who is coming too early, so do not wait at home." }
+      ]
+    },
+    {
+      "slug": "obstetric-fistula",
+      "category": "maternal-health",
+      "title": "Obstetric fistula: leaking after childbirth",
+      "summary": "A childbirth injury that causes leaking of urine or stool. It can usually be repaired, and it can be prevented.",
+      "body": [
+        "An obstetric fistula is a hole between the birth canal and the bladder or back passage. It is caused by labour that goes on for a very long time because the baby cannot come out, when the mother does not get emergency help in time.",
+        "A woman with a fistula leaks urine, stool or both all the time and cannot control it. This can cause infections and sores. Many women are hidden away or left alone because of the smell, and this causes great sadness and loss of income.",
+        "A fistula is not the woman's fault, and it can usually be repaired with an operation. After the operation, women may also need counselling and support, and extra care in future pregnancies.",
+        "Fistula is almost always preventable. Having a trained midwife at every birth, getting to a hospital quickly when labour is not moving, an operation (caesarean) when needed, and not getting pregnant too young all prevent it."
+      ],
+      "keyPoints": [
+        "Long, blocked labour without help can cause a fistula.",
+        "Leaking after childbirth can usually be repaired with an operation.",
+        "Give birth with a trained midwife, and get help fast if labour is long."
+      ],
+      "whenToGetHelp": [
+        "Labour that goes on for many hours and the baby is not coming.",
+        "Leaking urine or stool that you cannot control after childbirth."
+      ],
+      "sources": ["unfpaFistula"],
+      "faqs": [
+        { "q": "I leak urine all the time since I gave birth. What can I do?", "tags": "fistula leaking urine stool after childbirth incontinence", "a": "This may be an obstetric fistula, a childbirth injury that can usually be repaired with an operation. It is not your fault. Please see a health worker, who can refer you for treatment." },
+        { "q": "How can obstetric fistula be prevented?", "tags": "fistula prevent long labour", "a": "Give birth with a trained midwife, go to a hospital quickly if labour lasts many hours, and avoid getting pregnant at a very young age. An operation (caesarean) when labour is blocked prevents fistula." }
+      ]
+    },
+    {
+      "slug": "lassa-fever",
+      "category": "infections",
+      "title": "Lassa fever",
+      "summary": "A virus spread mainly by rats in West Africa, including Liberia. It is especially dangerous in pregnancy.",
+      "body": [
+        "Lassa fever is an illness caused by a virus. WHO lists Liberia as one of the countries in West Africa where Lassa fever is always present.",
+        "The virus is carried by a kind of rat that lives in and around homes. The rats do not get sick, but their urine and droppings carry the virus. People get it from food or household things soiled by rats. It can also pass from a sick person through blood and body fluids, mostly when there is poor infection control.",
+        "Signs can start 2 to 21 days after infection. It often begins with fever, weakness and headache, then sore throat, body pain, vomiting, diarrhoea, cough or belly pain. Most people have a mild illness, but about 1 in 5 become very sick, with swelling of the face, bleeding or fits.",
+        "Lassa fever is especially dangerous in pregnancy, mostly in the last three months. Both mother and baby are at high risk.",
+        "Protect your home: keep grain and food in containers rats cannot open, keep the house clean, throw rubbish away far from the home, and cook food well. If you care for a sick person, avoid touching their blood and body fluids."
+      ],
+      "keyPoints": [
+        "Lassa fever is present in Liberia and is spread mainly by rats.",
+        "Store food in rat-proof containers and keep the home clean.",
+        "It is very dangerous in pregnancy — get care early for fever."
+      ],
+      "whenToGetHelp": [
+        "Fever with weakness, headache, vomiting or diarrhoea, especially if rats are common where you live.",
+        "Any fever during pregnancy.",
+        "Bleeding, swelling of the face, fits or confusion — go now."
+      ],
+      "sources": ["whoLassa"],
+      "faqs": [
+        { "q": "How do people catch Lassa fever?", "tags": "Lassa rats mice food spread Liberia", "a": "Mostly from food or household things soiled by the urine or droppings of a kind of rat. It can also pass from a sick person through blood and body fluids. Keep food in rat-proof containers and keep the house clean." },
+        { "q": "Is Lassa fever dangerous in pregnancy?", "tags": "Lassa pregnant pregnancy baby", "a": "Yes. Lassa fever is very dangerous for both mother and baby, mostly in the last three months of pregnancy. If you are pregnant and have a fever, go to a health facility early." }
+      ]
+    },
+    {
+      "slug": "syphilis",
+      "category": "sti-hiv",
+      "title": "Syphilis and pregnancy",
+      "summary": "A sexually transmitted infection that often has no signs but can harm a baby. Testing in pregnancy and treatment cure it.",
+      "body": [
+        "Syphilis is an infection passed on during sex. A mother can also pass it to her baby during pregnancy. Syphilis can be prevented and cured.",
+        "Many people with syphilis have no signs, so they do not know they have it. Some get a painless sore on or near the private parts. Later there can be a rash that does not itch, often on the palms of the hands or soles of the feet. Without treatment, it can stay in the body for years and later harm the brain, heart and other organs.",
+        "In pregnancy, untreated syphilis can cause the baby to die in the womb or soon after birth, to be born too early, or to be born with the infection.",
+        "This is why every pregnant woman should be tested at her first antenatal visit. The test is quick. If the result is positive, a health worker gives treatment straight away, and partners should also be tested and treated.",
+        "Using a condom every time you have sex is the best protection, though sores outside the area the condom covers can still pass it on."
+      ],
+      "keyPoints": [
+        "Syphilis often has no signs.",
+        "Get tested at your first antenatal visit.",
+        "Syphilis can be cured with treatment from a health worker."
+      ],
+      "whenToGetHelp": [
+        "A sore on or near your private parts, or a rash on your palms or soles.",
+        "Your partner has syphilis, or you had sex without a condom and are worried.",
+        "You are pregnant and have not yet been tested."
+      ],
+      "sources": ["whoSyphilis"],
+      "faqs": [
+        { "q": "Can syphilis harm my unborn baby?", "tags": "syphilis pregnancy baby congenital test", "a": "Yes. Without treatment, syphilis can cause the baby to die in the womb or after birth, or to be born with the infection. Get tested at your first antenatal visit — syphilis can be cured with treatment from a health worker." },
+        { "q": "What are the signs of syphilis?", "tags": "syphilis symptoms sore rash", "a": "Many people have no signs. Some get a painless sore on or near the private parts, and later a rash that does not itch, often on the palms or soles. A quick test at a health facility can tell you." }
+      ]
+    },
+    {
+      "slug": "hepatitis-b",
+      "category": "infections",
+      "title": "Hepatitis B: protect your baby",
+      "summary": "A virus that harms the liver and can pass from mother to baby at birth. A vaccine on the first day of life protects the baby.",
+      "body": [
+        "Hepatitis B is a virus that infects the liver. It can cause a short illness or an infection that lasts for life and slowly damages the liver.",
+        "It passes from a mother to her baby, mostly at birth. It also spreads through blood and body fluids: during sex, through shared needles or razors, unsafe injections, tattoos and piercings. Babies and young children who get it are very likely to keep it for life.",
+        "Most people have no signs at first. Some feel very tired, sick or vomit, have belly pain, dark urine, or yellow skin and eyes.",
+        "Pregnant women should be tested for hepatitis B. If a mother has the virus, the health worker can take steps to lower the chance of passing it to the baby.",
+        "Every baby should get the hepatitis B vaccine within 24 hours of birth, then the rest of the doses on time. The vaccine is safe, works very well and protects for many years, likely for life."
+      ],
+      "keyPoints": [
+        "Hepatitis B can pass from mother to baby at birth.",
+        "Get tested in pregnancy.",
+        "Make sure your baby gets the vaccine in the first 24 hours and all later doses."
+      ],
+      "whenToGetHelp": [
+        "Yellow skin or eyes, dark urine, or long-lasting tiredness, vomiting or belly pain.",
+        "You are pregnant and have not been tested.",
+        "Your baby did not get the vaccine at birth — ask the health worker about catching up."
+      ],
+      "sources": ["whoHepB"],
+      "faqs": [
+        { "q": "How can I protect my baby from hepatitis B?", "tags": "hepatitis B baby vaccine birth dose newborn liver", "a": "Get tested during pregnancy, and make sure your baby gets the hepatitis B vaccine within 24 hours of birth and all the later doses. The vaccine is safe and protects for many years." },
+        { "q": "How does hepatitis B spread?", "tags": "hepatitis B spread sex blood needles mother", "a": "From mother to baby at birth, and through blood and body fluids — during sex, shared needles or razors, unsafe injections, tattoos and piercings. Condoms and not sharing sharp tools lower the risk." }
+      ]
+    },
+    {
+      "slug": "ebola-disease",
+      "category": "infections",
+      "title": "Ebola disease",
+      "summary": "A serious illness spread through the body fluids of sick people or animals. What to know about prevention, pregnancy and breastfeeding.",
+      "body": [
+        "Ebola disease is a rare but very serious illness caused by a group of viruses. On average about half of the people who get sick die, but early care improves the chance of surviving.",
+        "It first passes to people from infected animals such as fruit bats, monkeys and forest antelope, through their blood or raw meat. Between people it spreads through blood, vomit, stool and other body fluids, or things soiled with them. Touching the body of someone who died of Ebola during burial can also spread it.",
+        "Signs usually start 2 to 21 days after infection, often suddenly: fever, tiredness, muscle pain, headache and sore throat, then vomiting, diarrhoea, belly pain and rash. Bleeding is less common.",
+        "For women: the virus can stay in the womb and the baby of a woman infected in pregnancy, and it may be in breast milk. It can stay in the semen of male survivors for many months, so survivors should use condoms. Pregnant or breastfeeding survivors need ongoing care.",
+        "To prevent Ebola: do not touch sick or dead animals or eat raw bushmeat, avoid the body fluids of sick people, wash hands often, and use safe burials. A vaccine is used during outbreaks of the most common type."
+      ],
+      "keyPoints": [
+        "Ebola spreads through blood and body fluids, including at burials.",
+        "The virus can stay in semen and breast milk of survivors.",
+        "Get care early — it improves survival."
+      ],
+      "whenToGetHelp": [
+        "Fever with other signs after contact with a sick person, a sick animal or someone who died of Ebola.",
+        "Follow Ministry of Health advice during an outbreak and call for help instead of caring for a sick person alone."
+      ],
+      "sources": ["whoEbola"],
+      "faqs": [
+        { "q": "How does Ebola spread?", "tags": "Ebola spread body fluids burial bushmeat", "a": "Through the blood, vomit, stool and other body fluids of a sick person, things soiled with them, touching the body of someone who died of Ebola, or contact with infected animals and raw bushmeat." },
+        { "q": "Can Ebola pass through breast milk or sex?", "tags": "Ebola breastfeeding semen survivor pregnancy", "a": "The virus may be in the breast milk of a woman infected while breastfeeding, and it can stay in the semen of male survivors for many months. Survivors should use condoms and get follow-up care." }
+      ]
+    },
+    {
+      "slug": "mpox",
+      "category": "infections",
+      "title": "Mpox",
+      "summary": "A virus that causes a rash and fever and spreads through close contact. It can be serious in pregnancy and for babies.",
+      "body": [
+        "Mpox (once called monkeypox) is an illness caused by a virus. Most people get better, but some become very sick.",
+        "It spreads mainly through close contact with someone who has mpox: skin-to-skin contact, sex, kissing and close face-to-face contact. It can also spread through bedding or clothes, and from a mother to her baby during pregnancy or birth.",
+        "Signs usually start within a week, but can take up to 3 weeks: a rash that becomes blisters and then dries and crusts, fever, sore throat, headache, body pain and swollen glands. The rash can be on the face, hands, feet or private parts.",
+        "Pregnant women, young children and people with weak immunity, including untreated HIV, are more likely to get very sick. Mpox in pregnancy can cause loss of the baby.",
+        "To protect yourself, avoid close contact with anyone who has mpox, wash hands often, and cover sores until they heal. Condoms lower the risk but do not fully prevent it. Vaccines are used for people at high risk during outbreaks."
+      ],
+      "keyPoints": [
+        "Mpox spreads through close contact, including sex.",
+        "It can be serious in pregnancy and for babies.",
+        "See a health worker if you have a new rash with fever."
+      ],
+      "whenToGetHelp": [
+        "A new rash or blisters with fever or swollen glands.",
+        "You had close contact with someone who has mpox (watch for signs for 21 days).",
+        "You are pregnant and have a rash."
+      ],
+      "sources": ["whoMpox"],
+      "faqs": [
+        { "q": "What are the signs of mpox?", "tags": "mpox monkeypox rash blisters fever", "a": "A rash that becomes blisters and then crusts, often with fever, sore throat, headache, body pain and swollen glands. See a health worker if you have these signs." },
+        { "q": "Is mpox dangerous in pregnancy?", "tags": "mpox pregnant baby", "a": "Yes. Pregnant women are more likely to get very sick, and mpox can cause loss of the baby. If you are pregnant and have a new rash, see a health worker quickly." }
+      ]
+    },
+    {
+      "slug": "mental-health-pregnancy-after-birth",
+      "category": "mental-wellbeing",
+      "title": "Feeling low in pregnancy and after birth",
+      "summary": "Depression and worry are common during pregnancy and after a baby is born. Help works, and you are not alone.",
+      "body": [
+        "Many women feel very low or worried during pregnancy or after their baby is born. In countries like Liberia, about 1 in 5 mothers have depression after giving birth.",
+        "Any woman can be affected. The risk is higher with money problems, violence at home, great stress, conflict, or when there is little support from family and friends.",
+        "Signs can include feeling sad or hopeless most of the time, not eating or washing, not caring for yourself, finding it hard to care for or bond with the baby, and thoughts of hurting yourself.",
+        "This is an illness, not a weakness. It can make life hard for the mother and can affect the baby's growth and health. When the mother gets help, the baby also does better.",
+        "Help works. Talking with a trained health worker or community health worker, and support from people you trust, can make a big difference. Ask at your antenatal or postnatal visit."
+      ],
+      "keyPoints": [
+        "Feeling low after birth is common and is an illness, not a weakness.",
+        "Talking help from trained health workers works.",
+        "Getting help for the mother helps the baby too."
+      ],
+      "whenToGetHelp": [
+        "You feel sad, hopeless or worried most days for two weeks or more.",
+        "You cannot eat, sleep or care for yourself or your baby.",
+        "You have thoughts of hurting yourself or your baby, or you hear or see things others do not — get help now."
+      ],
+      "sources": ["whoPerinatalMH"],
+      "faqs": [
+        { "q": "Is it normal to feel sad after having a baby?", "tags": "postpartum depression sad after birth baby blues low mood", "a": "Many mothers feel low after birth, and about 1 in 5 mothers in countries like Liberia have depression. If you feel sad or hopeless most days, talk to a health worker — help works and you are not alone." },
+        { "q": "Where can I get help for depression after birth?", "tags": "depression help mother postpartum support talk", "a": "Talk to a nurse or community health worker at your clinic visit. Trained health workers can give talking help, and support from people you trust also helps. If you have thoughts of hurting yourself or your baby, get help straight away." }
+      ]
+    },
+    {
+      "slug": "healthy-eating-women-babies",
+      "category": "womens-health",
+      "title": "Healthy eating for women and babies",
+      "summary": "Simple food advice for women, pregnancy, breastfeeding and feeding babies from 6 months.",
+      "body": [
+        "A healthy diet is varied and mostly made from foods that are not processed. Eat plenty of fruit and vegetables every day, together with grains such as rice or maize, and beans, peas and groundnuts.",
+        "Women of child-bearing age often lack iron, folate and vitamin A. Eat a mix of foods that contain them, such as green leafy vegetables, beans, eggs, fish and meat when you can. During pregnancy and breastfeeding, foods from animals such as eggs, fish and meat are important.",
+        "Use less salt — adults should have less than one teaspoon a day in total. Cut down on sugar, sweet drinks and fried and packaged snacks. Boil or steam food instead of frying when you can.",
+        "Babies: give only breast milk for the first 6 months, and keep breastfeeding to 2 years or more. From 6 months, add soft, safe, varied foods such as mashed vegetables, fruit, eggs and fish. Do not add salt or sugar to baby food, and avoid sweet drinks."
+      ],
+      "keyPoints": [
+        "Eat fruit, vegetables, beans and grains every day.",
+        "Women need iron-rich foods, especially in pregnancy.",
+        "Only breast milk for 6 months, then add varied foods."
+      ],
+      "whenToGetHelp": [
+        "You feel very tired, weak or breathless, or look pale — you may need an iron check.",
+        "Your baby is not growing well, is losing weight or is often sick."
+      ],
+      "sources": ["whoDiet"],
+      "faqs": [
+        { "q": "What foods are good for women?", "tags": "diet nutrition food iron eat healthy women", "a": "Eat a mix of fruit, vegetables, beans and grains every day, with iron-rich foods such as green leafy vegetables, beans, eggs, fish or meat. Use less salt, sugar and fried food." },
+        { "q": "When should my baby start eating food?", "tags": "baby food weaning 6 months complementary feeding", "a": "Give only breast milk for the first 6 months. From 6 months, add soft, safe, varied foods such as mashed vegetables, fruit, eggs and fish, and keep breastfeeding to 2 years or more. Do not add salt or sugar." }
+      ]
+    },
+    {
+      "slug": "vaccines-for-your-child",
+      "category": "maternal-health",
+      "title": "Vaccines for your child",
+      "summary": "Why every vaccine dose matters and which serious diseases childhood vaccines prevent.",
+      "body": [
+        "Vaccines protect children from diseases that can cause serious illness, lasting disability or death. They are one of the most successful ways to keep children healthy.",
+        "Routine childhood vaccines protect against measles, diphtheria, tetanus and whooping cough, polio, hepatitis B, pneumonia and meningitis, and severe diarrhoea caused by rotavirus. Girls can get the HPV vaccine, which helps prevent cervical cancer later in life. Yellow fever and malaria vaccines are also used in parts of Africa.",
+        "Every dose matters. A child who misses doses is not fully protected. In 2025, about 13.5 million children in the world got no vaccines at all.",
+        "Take your child for every vaccine visit and keep the vaccination card safe. If your child missed a dose, talk to a health worker about catching up — it is not too late."
+      ],
+      "keyPoints": [
+        "Vaccines protect children from deadly diseases.",
+        "Complete every dose on time and keep the card.",
+        "Missed a dose? Ask the health worker about catching up."
+      ],
+      "whenToGetHelp": [
+        "Your child missed one or more vaccine visits.",
+        "After a vaccine, your child has a high fever, trouble breathing or swelling of the face — go to the facility."
+      ],
+      "sources": ["whoImmunization"],
+      "faqs": [
+        { "q": "Which diseases do childhood vaccines prevent?", "tags": "vaccines immunization measles polio children diseases", "a": "They protect against measles, diphtheria, tetanus, whooping cough, polio, hepatitis B, pneumonia, meningitis and severe diarrhoea. Girls can also get the HPV vaccine against cervical cancer." },
+        { "q": "My child missed a vaccine. What should I do?", "tags": "missed vaccine catch up immunization", "a": "Talk to a health worker about catching up. It is not too late, and completing every dose gives your child full protection." }
+      ]
+    },
+    {
+      "slug": "child-marriage",
+      "category": "safety-rights",
+      "title": "Child marriage",
+      "summary": "Marriage before 18 harms girls' health, education and safety. Girls have the right to grow up first.",
+      "body": [
+        "Child marriage is any marriage or living together as a couple where one partner is under 18 years old. Around the world, about 1 in 5 girls are still married as children.",
+        "Poverty, lack of schooling and pressure from family or community keep child marriage going. Some families think marriage will protect their daughter or help the family with money.",
+        "Child marriage harms girls. Girls who marry young often become pregnant while their bodies are still growing, when pregnancy and birth are more dangerous. They are less likely to stay in school, and more likely to face violence at home and to feel alone.",
+        "Every girl has the right to grow up, finish school and choose if and when to marry. If you or a girl you know is being forced to marry, talk to someone you trust, a teacher, a health worker or a support service."
+      ],
+      "keyPoints": [
+        "Marriage before 18 is child marriage.",
+        "It puts girls at risk of dangerous early pregnancy and violence.",
+        "Girls have the right to finish school and choose when to marry."
+      ],
+      "whenToGetHelp": [
+        "A girl is being forced or pressured to marry.",
+        "A girl who is married is being hurt or is pregnant — she needs care and support."
+      ],
+      "sources": ["unicefChildMarriage"],
+      "faqs": [
+        { "q": "Why is child marriage harmful?", "tags": "child marriage early marriage girls under 18", "a": "Girls who marry young often become pregnant before their bodies are ready, which is more dangerous. They are less likely to finish school and more likely to face violence. Every girl has the right to grow up first." },
+        { "q": "What can I do if a girl is being forced to marry?", "tags": "forced marriage help girl protection", "a": "Talk to someone you trust, such as a teacher, health worker or a support service. A girl being forced to marry or being hurt needs protection and support." }
+      ]
+    }
+  ]
+}

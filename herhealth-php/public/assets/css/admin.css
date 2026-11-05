@@ -117,3 +117,4 @@ code { background: #f1ecef; padding: 1px 6px; border-radius: 6px; font-size: .85
   .side, .bar, .toolbar, .btn, .btn-row, .pager, .form-actions { display: none !important; }
   .shell { display: block; } .page { padding: 0; } .table-wrap { box-shadow: none; border: 0; overflow: visible; } body { background: #fff; }
 }
+.upload-panel summary { cursor: pointer; display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; min-height: 40px; }

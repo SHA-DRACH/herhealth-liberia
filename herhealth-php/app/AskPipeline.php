@@ -84,6 +84,19 @@ final class AskPipeline
                 'generatedBy' => $provider === 'none' ? 'approved-passage' : 'ai-rephrased',
             ];
             if ($d['risk'] === 'AMBER') $out['amberNote'] = t('ask.amberNote');
+        } elseif ($d['pathway'] === 'FALLBACK' && in_array($d['risk'], ['GREEN', 'AMBER'], true) && WebSearch::enabled()) {
+            // 6b. Trusted-sites web answer — only when the reviewed library has nothing. Emergency, protection,
+            // crisis and medicine questions are decided above and can never reach this branch.
+            $web = WebSearch::answer($q, $uiLang);
+            $flag = $web ? Safety::postCheck($web['text'], $web['grounding']) : null;
+            if ($web && !$flag) {
+                $provider = 'web';
+                $out['pathway'] = 'WEB_ANSWER';
+                $out += ['answer' => $web['text'], 'sources' => $web['sources'], 'reviewed' => false];
+                if ($d['risk'] === 'AMBER') $out['amberNote'] = t('ask.amberNote');
+            } else {
+                $out['message'] = Content::safetyMessage('FALLBACK', $uiLang);
+            }
         } else {
             $out['message'] = Content::safetyMessage($d['pathway'], $uiLang);
         }
@@ -96,7 +109,7 @@ final class AskPipeline
                 'language_code' => $detected,
                 'input_mode' => $inputMode === 'VOICE' ? 'VOICE' : 'TEXT',
                 'risk_level' => $d['risk'],
-                'pathway' => $d['pathway'],
+                'pathway' => $out['pathway'],
                 'topic_category' => $category,
                 'matched_article_id' => $articleId,
                 'confidence' => $confidence,

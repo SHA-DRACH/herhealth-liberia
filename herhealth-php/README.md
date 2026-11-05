@@ -31,7 +31,10 @@ No account, no name and no phone number are needed. A **Quick Exit** button is a
 
 | Area | Status |
 | --- | --- |
-| Health content (28 articles, 92 Q&A passages, 27 sources) | Implemented; clinically reviewed by two Registered Nurses |
+| Health content (28 published articles, 92 Q&A passages) | Clinically reviewed by two Registered Nurses |
+| 12 new researched articles (Liberia maternal care, Lassa fever, Ebola, mpox, syphilis, hepatitis B, fistula, preterm babies, perinatal mental health, nutrition, vaccines, child marriage) | Drafts awaiting clinical review — not public |
+| Admin article upload (.docx/.txt/.md/.html) | Implemented; uploads start as drafts |
+| Trusted-sites web answers when the library has no answer | Implemented; needs an API key; labelled unreviewed; switchable off |
 | Clinical review register | Implemented (Catherine, RN; Juah, RN). Surnames, licence numbers and review dates to be added when verified information is supplied |
 | AI safety suite | 55/56 passing, 18/18 RED escalated. SAFETY-021 (“very heavy flow”) awaits the nurses' decision — see [docs/ai-safety.md](docs/ai-safety.md) |
 | English | Published |

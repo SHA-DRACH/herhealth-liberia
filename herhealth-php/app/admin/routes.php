@@ -145,6 +145,32 @@ function admin_articles(array $seg, bool $isPost): void
         return;
     }
 
+    // Upload a file (.docx / .txt / .md / .html) → new DRAFT article that must go through clinical review.
+    if ($id === 'import') {
+        if (!$isPost || !$canEdit) redirect('admin/articles');
+        require_once ROOT . '/app/ArticleImport.php';
+        [$parsed, $err] = ArticleImport::fromUpload($_FILES['file'] ?? []);
+        $catId = (int) post('category_id');
+        if (!$err && !Db::val('SELECT id FROM categories WHERE id = ?', [$catId])) $err = 'Choose a category.';
+        if ($err) { flash($err, 'error'); redirect('admin/articles'); }
+        $slug = $parsed['slug']; $n = 2;
+        while (Db::val('SELECT COUNT(*) FROM articles WHERE slug = ?', [$slug])) $slug = $parsed['slug'] . '-' . $n++;
+        $pdo = Db::pdo(); $pdo->beginTransaction();
+        $aid = Db::insert('articles', ['article_code' => 'HH-ART-TMP' . bin2hex(random_bytes(3)), 'slug' => $slug, 'category_id' => $catId,
+            'title' => $parsed['title'], 'summary' => $parsed['summary'], 'body' => $parsed['body'], 'key_points' => $parsed['key_points'],
+            'when_to_get_help' => $parsed['when_to_get_help'], 'version' => '0.1', 'content_status' => 'DRAFT', 'clinical_review_status' => 'NOT_REVIEWED']);
+        Db::run('UPDATE articles SET article_code = ? WHERE id = ?', [sprintf('HH-ART-%03d', $aid), $aid]);
+        if ($sid = (int) post('source_id')) Db::insert('article_sources', ['article_id' => $aid, 'source_id' => $sid]);
+        $name = basename((string) ($_FILES['file']['name'] ?? 'file'));
+        Db::insert('article_versions', ['article_id' => $aid, 'version' => '0.1', 'title' => $parsed['title'], 'summary' => $parsed['summary'],
+            'body' => $parsed['body'], 'key_points' => $parsed['key_points'], 'when_to_get_help' => $parsed['when_to_get_help'],
+            'content_status' => 'DRAFT', 'medically_significant' => 1, 'change_note' => 'Imported from uploaded file ' . mb_substr($name, 0, 120), 'created_by' => $u['id']]);
+        $pdo->commit();
+        audit('import', 'article', (string) $aid, $name);
+        flash('Imported as a draft. Check the text, add its sources, then submit it for clinical review. It is not public until a nurse approves it.');
+        redirect('admin/articles/' . $aid);
+    }
+
     $article = $id === 'new' ? null : Db::one('SELECT * FROM articles WHERE id = ?', [(int) $id]);
     if ($id !== 'new' && !$article) { flash('Article not found.', 'error'); redirect('admin/articles'); }
     $error = null;

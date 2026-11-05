@@ -12,6 +12,24 @@
   </div>
 </div>
 
+<?php if ($canEdit): $srcs = Db::all('SELECT id, organization, title FROM sources ORDER BY organization, title'); ?>
+<details class="panel upload-panel" data-aos="fade-up">
+  <summary><strong>⬆ Upload an article file</strong> <span class="muted small">Word (.docx), text (.txt), Markdown (.md) or web page (.html) — becomes a draft for clinical review</span></summary>
+  <form method="post" action="<?= e(base_url('admin/articles/import')) ?>" enctype="multipart/form-data" class="form-grid mt">
+    <?= csrf_field() ?>
+    <div class="field"><label for="upFile">File *</label><input id="upFile" type="file" name="file" required accept=".docx,.txt,.md,.html,.htm"></div>
+    <div class="field"><label for="upCat">Category *</label>
+      <select id="upCat" name="category_id" required><option value="">Choose…</option>
+        <?php foreach ($categories as $c): ?><option value="<?= $c['id'] ?>"><?= e($c['name']) ?></option><?php endforeach; ?></select></div>
+    <div class="field wide"><label for="upSrc">Source (optional — add more on the next page)</label>
+      <select id="upSrc" name="source_id"><option value="">—</option>
+        <?php foreach ($srcs as $s): ?><option value="<?= $s['id'] ?>"><?= e($s['organization'] . ' — ' . $s['title']) ?></option><?php endforeach; ?></select></div>
+    <p class="small muted wide">Tip: use headings “Key points” and “When to get help” in your file and HerHealth fills those sections automatically. Uploaded articles are never published until a clinical reviewer approves them.</p>
+    <div class="form-actions wide"><button class="btn btn-primary">Upload as draft</button></div>
+  </form>
+</details>
+<?php endif; ?>
+
 <form class="toolbar" method="get">
   <input type="search" name="q" value="<?= e($_GET['q'] ?? '') ?>" placeholder="Search title or ID…" aria-label="Search">
   <select name="status" class="js-autosubmit" aria-label="Content status"><option value="">Content status: all</option>

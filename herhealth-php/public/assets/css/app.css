@@ -265,3 +265,5 @@ fieldset { border: 0; padding: 0; margin: 0 0 14px; } legend { font-weight: 750;
   [data-aos] { opacity: 1 !important; transform: none !important; }
 }
 @media print { .quick-exit, .dock, .bar, .foot-links, .tools { display: none !important; } body { padding: 0; } .fold > * { display: block !important; } }
+.a-web { border: 2px dashed color-mix(in srgb, var(--teal) 55%, transparent) !important; }
+.a-web .a-badge { background: var(--teal-50); }

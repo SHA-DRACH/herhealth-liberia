@@ -47,6 +47,8 @@ $settings = [
     ['retention_confirmed', '0', 'Set to 1 once SkillBridge has formally adopted these retention periods'],
     ['live_site_url', '', 'Public URL of the live prototype'],
     ['voice_input_enabled', '1', 'Show the microphone button on Ask HerHealth (browser speech recognition)'],
+    ['web_search_enabled', '1', 'Answer from trusted health websites when the reviewed library has no answer (needs WEB_SEARCH_API_KEY or AI_PROVIDER=anthropic). Set 0 for the UNICEF demo.'],
+    ['web_search_domains', WebSearch::DEFAULT_DOMAINS, 'Only these websites (and their subdomains) are searched for web answers.'],
 ];
 foreach ($settings as [$k, $v, $d]) Db::insert('settings', ['skey' => $k, 'svalue' => $v, 'description' => $d]);
 
@@ -193,6 +195,12 @@ foreach ($facilities as [$n, $c, $d, $l]) {
 }
 
 $pdo->commit();
+
+// Researched articles awaiting clinical review (DRAFT status, never public until approved).
+require_once __DIR__ . '/import_drafts.php';
+[$draftsAdded] = import_draft_articles(__DIR__ . '/draft-articles-2026-11.json');
+echo "  Draft articles awaiting clinical review: $draftsAdded
+";
 
 // ------------------------------------------------------------------ first admin
 $email = strtolower((string) env('ADMIN_EMAIL', 'admin@herhealth.local'));

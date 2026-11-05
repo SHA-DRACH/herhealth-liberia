@@ -281,7 +281,7 @@
   function render(r, question, spokenInput) {
     out.replaceChildren();
     const kind = { EMERGENCY: ["a-red", "🚨"], PROTECTION: ["a-protect", "🤝"], MENTAL_HEALTH_CRISIS: ["a-crisis", "💜"], MEDICATION: ["", "💊"],
-      OUT_OF_SCOPE: ["", "ℹ️"], FALLBACK: ["", "📖"], ANSWER: ["", "✅"] }[r.pathway] || ["", "ℹ️"];
+      OUT_OF_SCOPE: ["", "ℹ️"], FALLBACK: ["", "📖"], ANSWER: ["", "✅"], WEB_ANSWER: ["", "🌐"] }[r.pathway] || ["", "ℹ️"];
     const card = el("div", { class: "a-card " + kind[0], role: ["EMERGENCY", "MENTAL_HEALTH_CRISIS"].includes(r.pathway) ? "alert" : "region" });
     let spoken = "";
     const head = (title) => el("div", { class: "a-head" }, el("span", { class: "a-badge", "aria-hidden": "true", text: kind[1] }), el("h2", { text: title }));
@@ -301,6 +301,22 @@
         el("p", { class: "tiny thanks", hidden: "", text: T["article.thanks"] }));
       card.append(fb);
       wireUseful(fb, "ANSWER", r.article.slug);
+    } else if (r.pathway === "WEB_ANSWER") {
+      // Answer from allowlisted health websites — clearly marked as NOT reviewed by HerHealth nurses.
+      card.classList.add("a-web");
+      card.append(head(T["ask.webTitle"]), el("p", { class: "a-q", text: "“" + question + "”" }), el("p", { class: "a-text", text: r.answer }));
+      card.append(el("p", { class: "note", text: "🌐 " + T["ask.webNotice"] }));
+      spoken = r.answer + " " + T["ask.webNotice"];
+      if (r.amberNote) { card.append(el("p", { class: "note", text: "⚠️ " + r.amberNote })); spoken += " " + r.amberNote; }
+      card.append(el("div", { class: "a-src" }, el("p", {}, "📚 ",
+        ...r.sources.map((s, i) => [i ? " · " : "", el("a", { href: s.url, target: "_blank", rel: "noopener noreferrer", text: s.organization + " — " + s.title })]))));
+      card.append(pills(["help", "📍 " + T["ask.findHelp"], "pill-teal"]));
+      const fb = el("div", { class: "feedback-inline thumbs" }, el("p", { text: T["ask.useful"] }),
+        el("div", { class: "thumb-row" }, el("button", { type: "button", class: "thumb js-useful", "data-useful": "YES", "aria-label": T["article.yes"], text: "👍" }),
+          el("button", { type: "button", class: "thumb js-useful", "data-useful": "NO", "aria-label": T["article.no"], text: "👎" })),
+        el("p", { class: "tiny thanks", hidden: "", text: T["article.thanks"] }));
+      card.append(fb);
+      wireUseful(fb, "ANSWER", null);
     } else {
       const m = r.message || { title: "", body: [] };
       card.append(head(m.title));
@@ -320,7 +336,7 @@
         if (sb.classList.contains("is-speaking")) { speechSynthesis.cancel(); stop(); return; }
         sb.classList.add("is-speaking"); speakText(spoken, stop);
       });
-      card.insertBefore(sb, card.children[r.pathway === "ANSWER" ? 3 : 1] || null);
+      card.insertBefore(sb, card.children[["ANSWER", "WEB_ANSWER"].includes(r.pathway) ? 3 : 1] || null);
       // Someone who asked by voice hears the answer spoken back (they started it with their own tap).
       if (spokenInput) { sb.classList.add("is-speaking"); speakText(spoken, stop); }
     }

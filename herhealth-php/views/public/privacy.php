@@ -32,6 +32,11 @@ $confirmed = Db::setting('retention_confirmed', '0') === '1';
   <p>If you tap the microphone on Ask HerHealth, your browser's own speech service turns your voice into text (on many phones this is provided by the phone maker). HerHealth receives only the text, and does not store it. If you prefer, simply type.</p>
 </section>
 
+<section class="card" id="web" data-aos="fade-up">
+  <h2>Answers from trusted health websites</h2>
+  <p>If HerHealth has no nurse-reviewed answer, it may search a short list of trusted public-health websites (such as WHO, UNICEF and Liberia's Ministry of Health). To do this, your question — with names, phone numbers and e-mail addresses removed — is sent to our AI search provider. HerHealth does not store your question. These answers are clearly marked as not reviewed by our nurses.</p>
+</section>
+
 <section class="card" id="retention" data-aos="fade-up">
   <h2>How long we keep data</h2>
   <table class="table">

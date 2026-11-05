@@ -56,3 +56,17 @@ Liberian English symptom wording such as “my belly da hurt me” currently cla
 ## Lexicon status
 
 All active terms are currently **PROVISIONAL** (carried over from the earlier prototype). The nurses should review the lexicon and pathway texts and mark them CLINICALLY_VALIDATED in the admin.
+
+## Trusted-sites web answers (added November 2026)
+
+When the clinically reviewed library has **no** answer, Ask HerHealth may search a short allowlist of public-health websites (Settings → `web_search_domains`; default WHO, UNICEF, UNFPA, US CDC, NHS, Liberia MOH, MedlinePlus, FHI 360) and read the answer aloud.
+
+- Runs only for in-scope GREEN/AMBER questions. Emergency, protection, crisis, medicine and out-of-scope questions are decided by the deterministic layer first and **never** reach the web (5 automated checks in `tests/run_tests.php`).
+- Uses the Anthropic Messages API web-search tool with `allowed_domains`; answers must cite at least one allowlisted page, pass the same post-generation check (no diagnosis, dosing, guarantees or invented numbers), and are labelled **"not reviewed by HerHealth nurses"** with their sources.
+- The question is sent with identifiers removed and is not stored; logged as pathway `WEB_ANSWER`, provider `web`.
+- Needs `WEB_SEARCH_API_KEY` in `.env` (or `AI_PROVIDER=anthropic` + `AI_API_KEY`). Switch off with Settings → `web_search_enabled = 0` — recommended for the UNICEF demonstration, since section 8 requires answers from approved content only.
+- Unanswered questions in the analytics show which topics need new reviewed articles.
+
+## Search over full article text
+
+Retrieval now indexes every paragraph, key point and "when to get help" line of approved articles in addition to the Q&A passages, so differently-worded (including spoken) questions find reviewed content. Q&A matches still rank first. Safety suite unchanged: 55/56, RED 18/18.
