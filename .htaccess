@@ -1,0 +1,8 @@
+# Apache (XAMPP): send visitors to the PHP app; block direct access to source, data and config.
+Options -Indexes
+RewriteEngine On
+RewriteBase /herhealth/
+RewriteRule ^$ herhealth-php/ [R=302,L]
+RewriteCond %{REQUEST_URI} !/herhealth-php/
+RewriteCond %{REQUEST_URI} !/site/
+RewriteRule ^ - [F]

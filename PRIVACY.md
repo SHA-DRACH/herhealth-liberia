@@ -21,9 +21,19 @@ This describes what the software does. Keep it in sync with the code and with th
 - Every admin mutation is written to `audit_log`.
 - Usability tests record an anonymous participant code, age range, device and answers — never names. Consent confirmation is required by the database.
 
-## Retention (to be confirmed by SkillBridge)
+## Retention schedule (MVP)
 
-Recommended defaults: analytics events and AI query metadata 24 months; feedback comments 12 months; admin sessions deleted on expiry; backups encrypted and kept 30 days.
+| Data | Retention |
+| --- | --- |
+| Anonymous analytics events | 24 months |
+| AI interaction metadata (no question text) | 24 months |
+| Feedback comments | 12 months |
+| Administrative audit logs | 24 months (security need) |
+| Admin sessions | Deleted on expiry |
+| Encrypted rotating backups | About 30 days |
+| Raw health questions | Never stored |
+
+These periods are to be formally adopted by SkillBridge Liberia before publication. Raw health questions are not retained for analytics or any other purpose.
 
 ## Never commit
 

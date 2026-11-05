@@ -10,6 +10,7 @@ export const metadata = { title: "HerHealth Admin", robots: { index: false, foll
 const NAV: { href: string; label: string; cap?: Capability }[] = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/content", label: "Health Content" },
+  { href: "/admin/clinical-reviews", label: "Clinical Reviews", cap: "clinical.view" },
   { href: "/admin/translations", label: "Translations" },
   { href: "/admin/audio", label: "Audio" },
   { href: "/admin/sources", label: "Knowledge Sources" },

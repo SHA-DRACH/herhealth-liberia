@@ -1,0 +1,4 @@
+# Apache: serve only the public/ folder; app code, .env and database files are never reachable.
+Options -Indexes
+RewriteEngine On
+RewriteRule ^(.*)$ public/$1 [L]

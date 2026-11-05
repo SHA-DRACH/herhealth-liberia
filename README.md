@@ -1,10 +1,25 @@
 # HerHealth Liberia
 
-HerHealth Liberia is an open-source, AI-assisted reproductive and maternal health information platform developed by SkillBridge Liberia Corporation.
+HerHealth Liberia is an open-source, privacy-first, AI-assisted reproductive and maternal health information platform developed by SkillBridge Liberia Corporation for women and adolescent girls in Liberia.
 
-> **Status: MVP 0.1 prototype.** The software is complete and tested. The health knowledge base, verified facility directory, pilot-language translations and usability-test data are **intentionally empty** until they are supplied and reviewed by qualified people (see [What the team must supply](#what-the-team-must-supply)). No content, users, facilities or statistics are fabricated or seeded.
+**HerHealth Liberia is developed and maintained by SkillBridge Liberia Corporation.**
 
-> **Live prototype preview:** https://sha-drach.github.io/herhealth-liberia/ — a static HTML/CSS/JavaScript version (folder `site/`) with 28 articles and 92 questions and answers across 10 topics, written in plain language from 27 WHO, NHS and UNICEF pages, each with its source. The assistant model for the full system is Claude Opus 5.5 (Anthropic); the static preview matches answers from the library without calling a model. Ask HerHealth, the safety pathways and the 56 safety tests run entirely in the browser. Content is awaiting review by a qualified health reviewer.
+> **Status: Functional MVP 0.1.** HerHealth Liberia is a functional MVP currently undergoing structured user testing and localization. Core software functionality, privacy controls, health-information workflows, safety mechanisms and anonymous analytics have been implemented. Clinical health information has undergone review by registered nursing professionals in Liberia. Localization, referral-directory verification and structured usability testing continue as part of pilot readiness.
+>
+> **Two editions:** this Next.js/TypeScript application, and a PHP + MySQL edition in [`herhealth-php/`](herhealth-php/) used for the current prototype presentation (same design, safety pipeline, content and admin). The TypeScript edition is the basis for the planned TypeScript/NestJS rebuild.
+
+> **Live prototype preview:** https://sha-drach.github.io/herhealth-liberia/ — a static HTML/CSS/JavaScript version (folder `site/`) with 28 articles and 92 questions and answers across 10 topics, written in plain language from 27 WHO, NHS and UNICEF pages, each with its source, and clinically reviewed by two Registered Nurses licensed under the Liberia Board of Nursing. The static preview matches answers from the library without calling a model. Ask HerHealth, the safety pathways and the 56 safety tests run entirely in the browser.
+
+## Clinical review
+
+HerHealth Liberia's reproductive and maternal health information has been reviewed and approved by Registered Nurses licensed under the Liberia Board of Nursing, including professionals with experience in emergency nursing and gender-focused programming.
+
+| Reviewer | Qualification | Position | Experience | Authority |
+| --- | --- | --- | --- | --- |
+| Catherine | Registered Nurse (RN) | Emergency Room, ELWA Hospital | More than 8 years | Liberia Board of Nursing |
+| Juah | Registered Nurse (RN) | Gender Officer, National WASH Commission (NWASHC) | More than 6 years | Liberia Board of Nursing |
+
+Together the reviewers bring more than 14 years of professional experience. Surnames, licence numbers and review dates will be added when verified information is supplied; licence numbers are kept internally and not published without consent. The register is in Admin → Clinical Reviews (`clinical_reviews`, migration 4). HerHealth makes no claim of a clinical trial, medically certified AI, AI diagnosis, or government, Ministry of Health or UNICEF approval.
 
 ## Problem
 
@@ -34,7 +49,7 @@ Women and adolescent girls in Liberia. Usability testing starts with adults (18+
 
 - **Next.js 15 + TypeScript + Tailwind CSS**, mobile-first PWA with a hand-written service worker (`public/sw.js`).
 - **PostgreSQL + pgvector** in production (`DATABASE_URL`). For local development and tests the same schema runs on **PGlite** (PostgreSQL compiled to WebAssembly) — no database install needed.
-- **Provider-independent AI** (`src/lib/ai/provider.ts`): `generate()`, `embed()`, `classify()`. Ships with `none` (answers with the exact approved passage) and `anthropic` (Claude) providers.
+- **Provider-independent AI layer supporting approved LLM providers** (`src/lib/ai/provider.ts`): `generate()`, `embed()`, `classify()`. Ships with `none` (answers with the exact approved passage) and an adapter for one commercial provider; others can be added behind the same interface. HerHealth's innovation is the system around the model: controlled health knowledge, RAG, deterministic safety classification, clinical review, localization, privacy, low-bandwidth delivery, referral architecture and anonymous impact measurement.
 - **Retrieval**: PostgreSQL full-text search over approved chunks; every chunk carries `article_id`, title, language, medical review status, version, source and `updated_at`.
 
 See [docs/architecture.md](docs/architecture.md) and [docs/data-model.md](docs/data-model.md).
@@ -43,7 +58,7 @@ See [docs/architecture.md](docs/architecture.md) and [docs/data-model.md](docs/d
 
 The assistant is not a chatbot. Every question goes through: validation → identifier stripping → **safety classification before any model call** → emergency / protection / crisis pathways that bypass generation → retrieval from **published, medically approved** content only → confidence check with a safe fallback → grounded generation → **post-generation check** → sources → anonymous analytics. A model can only raise a risk level, never lower it. See [docs/ai-safety.md](docs/ai-safety.md).
 
-Latest automated result on the deterministic layer (no AI model, empty knowledge base): **55/56 safety cases pass and 18/18 RED scenarios escalate.** Medicine requests get a fixed no-prescribing response and non-health questions are declined as out of scope. The remaining failure (`SAFETY-021`, "very heavy flow" not flagged AMBER) is left for the medical reviewer to decide.
+Latest automated result on the deterministic layer (no AI model, empty knowledge base): **55/56 safety cases pass and 18/18 RED scenarios escalate.** Medicine requests get a fixed no-prescribing response and non-health questions are declined as out of scope. The remaining case (`SAFETY-021`, "very heavy flow") is medically ambiguous: it has **not** been changed to pass and is awaiting the registered nurses' decision on the classification and escalation wording (see [docs/ai-safety.md](docs/ai-safety.md)). Target: 100% of medically validated scenarios, including 100% of RED scenarios.
 
 ## Privacy
 
@@ -100,7 +115,7 @@ Usability sessions are recorded in **Admin → Testing**. See [docs/testing.md](
 
 ## What the team must supply
 
-1. 25–40 health articles from identifiable, licensable sources, each approved by a qualified **Health Reviewer**.
+1. Verified surnames, licence numbers and review dates for the clinical reviewers (Catherine, RN and Juah, RN), and their decision on `SAFETY-021`.
 2. Medical validation of the provisional red-flag lexicon and the emergency/protection/crisis pathway texts (Admin → AI Safety Review), plus safeguarding review before any public use by minors.
 3. A fluent translator and Language Reviewer for Liberian English and one pilot language, and human-recorded audio.
 4. Manually verified facilities and helplines.
@@ -117,4 +132,4 @@ Software: [MIT](LICENSE). Original SkillBridge educational content may be releas
 
 ## About SkillBridge Liberia
 
-HerHealth Liberia is developed by SkillBridge Liberia Corporation.
+HerHealth Liberia is developed and maintained by SkillBridge Liberia Corporation, an applicant to the UNICEF FemTech programme. HerHealth is not funded, supported, approved or endorsed by UNICEF.

@@ -404,4 +404,47 @@ export const migrations: Migration[] = [
     version: 3,
     statements: [`ALTER TABLE admin_users ADD COLUMN must_change_password BOOLEAN NOT NULL DEFAULT false`],
   },
+  {
+    // Clinical review register (UNICEF submission instructions §3–4). Records the registered nurses who
+    // reviewed the prototype's health information. Surnames, licence numbers and review dates are left
+    // empty until verified information is supplied — they must never be invented. Licence numbers are
+    // internal due-diligence data and are not published without the reviewer's express consent.
+    version: 4,
+    statements: [
+      `CREATE TABLE clinical_reviews (
+        id SERIAL PRIMARY KEY,
+        reviewer_full_name TEXT NOT NULL,
+        public_display_name TEXT,
+        professional_qualification TEXT NOT NULL,
+        regulatory_authority TEXT NOT NULL,
+        license_number TEXT,
+        license_public_consent BOOLEAN NOT NULL DEFAULT false,
+        organization_position TEXT,
+        years_experience TEXT,
+        content_version_reviewed TEXT,
+        scope_of_review TEXT,
+        review_date DATE,
+        decision TEXT NOT NULL DEFAULT 'PENDING' CHECK (decision IN ('PENDING','CHANGES_REQUIRED','APPROVED','SUPERSEDED')),
+        comments TEXT,
+        approval_reference TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      )`,
+      `CREATE TABLE article_clinical_reviews (
+        article_id INTEGER NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
+        clinical_review_id INTEGER NOT NULL REFERENCES clinical_reviews(id) ON DELETE CASCADE,
+        article_version INTEGER NOT NULL,
+        linked_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        PRIMARY KEY (article_id, clinical_review_id, article_version)
+      )`,
+      `INSERT INTO clinical_reviews (reviewer_full_name, public_display_name, professional_qualification, regulatory_authority,
+          organization_position, years_experience, content_version_reviewed, scope_of_review, decision, comments) VALUES
+        ('Catherine', 'Catherine, RN', 'Registered Nurse (RN)', 'Liberia Board of Nursing', 'Emergency Room, ELWA Hospital', 'More than 8 years',
+         'HerHealth prototype health content v1', 'Reproductive and maternal health information incorporated into the HerHealth prototype', 'APPROVED',
+         'Surname, licence/registration number, review date and approval reference to be completed when verified information is supplied.'),
+        ('Juah', 'Juah, RN', 'Registered Nurse (RN)', 'Liberia Board of Nursing', 'Gender Officer, National WASH Commission (NWASHC)', 'More than 6 years',
+         'HerHealth prototype health content v1', 'Reproductive and maternal health information incorporated into the HerHealth prototype', 'APPROVED',
+         'Surname, licence/registration number, review date and approval reference to be completed when verified information is supplied.')`,
+    ],
+  },
 ];
